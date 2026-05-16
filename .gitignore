@@ -1,0 +1,24 @@
+# Backend (Spring Boot)
+backend/target/
+backend/!**/src/main/**/target/
+backend/!**/src/test/**/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/logs/
+
+# Frontend (React/Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+frontend/.env
+frontend/.env.*
+frontend/.env.*.local
+frontend/.DS_Store
+frontend/coverage/
+
+# IDEs and Tools
+.idea/
+.vscode/
+*.swp
+*.swo
+*.log
