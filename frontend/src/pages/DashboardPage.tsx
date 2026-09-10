@@ -15,49 +15,20 @@ const COLORS = ['#f59e0b', '#22c55e', '#ef4444', '#3b82f6', '#8b5cf6'];
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     fetchDashboard();
   }, []);
 
   const fetchDashboard = async () => {
+    setLoading(true);
+    setError(false);
     try {
       const res = await dashboardAPI.getData();
       setData(res.data);
     } catch {
-      // Use mock data for demo
-      setData({
-        totalFarmers: 1247, activeFarmers: 1089, totalAgents: 34, activeAgents: 28,
-        totalLoans: 856, pendingLoans: 45, approvedLoans: 312, repaidLoans: 389,
-        deliveredLoans: 87, rejectedLoans: 23,
-        totalDisbursed: 45600000, totalRepaid: 28900000, outstandingBalance: 16700000,
-        totalInputsDistributed: 4560, lowStockItems: 3,
-        loanTrends: [
-          { month: 'Jan', count: 45 }, { month: 'Feb', count: 62 }, { month: 'Mar', count: 78 },
-          { month: 'Apr', count: 95 }, { month: 'May', count: 110 }, { month: 'Jun', count: 88 },
-          { month: 'Jul', count: 130 }, { month: 'Aug', count: 105 }, { month: 'Sep', count: 92 },
-          { month: 'Oct', count: 115 }, { month: 'Nov', count: 125 }, { month: 'Dec', count: 140 },
-        ],
-        repaymentTrends: [
-          { month: 'Jan', amount: 2100000 }, { month: 'Feb', amount: 2800000 }, { month: 'Mar', amount: 3200000 },
-          { month: 'Apr', amount: 2900000 }, { month: 'May', amount: 3600000 }, { month: 'Jun', amount: 3100000 },
-        ],
-        loansByStatus: [
-          { status: 'PENDING', count: 45 }, { status: 'APPROVED', count: 312 },
-          { status: 'REJECTED', count: 23 }, { status: 'DELIVERED', count: 87 }, { status: 'REPAID', count: 389 },
-        ],
-        stockByCategory: [
-          { category: 'SEEDS', quantity: 12500 }, { category: 'FERTILIZERS', quantity: 8700 },
-          { category: 'PESTICIDES', quantity: 3200 },
-        ],
-        recentActivities: [
-          { id: 1, title: 'Loan Approved', message: 'Loan #234 approved for Jean Mugabo', type: 'LOAN_APPROVAL', createdAt: new Date().toISOString() },
-          { id: 2, title: 'New Farmer', message: 'Marie Uwase registered in Gasabo', type: 'SYSTEM', createdAt: new Date().toISOString() },
-          { id: 3, title: 'Repayment Received', message: 'Payment of 150,000 RWF received', type: 'SYSTEM', createdAt: new Date().toISOString() },
-          { id: 4, title: 'Low Stock Alert', message: 'NPK Fertilizer stock below threshold', type: 'LOW_STOCK', createdAt: new Date().toISOString() },
-          { id: 5, title: 'Inputs Delivered', message: 'Seeds delivered to Musanze district', type: 'INPUT_DELIVERY', createdAt: new Date().toISOString() },
-        ],
-      });
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -78,6 +49,16 @@ export default function DashboardPage() {
           <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
           <p className="text-gray-500 text-sm">Loading dashboard...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-2xl border border-red-100 bg-red-50 p-8 text-center">
+        <h2 className="font-semibold text-red-900">Unable to load the operations dashboard.</h2>
+        <p className="mt-1 text-sm text-red-700">Check the backend connection and try again.</p>
+        <button onClick={fetchDashboard} className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white">Retry</button>
       </div>
     );
   }

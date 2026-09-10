@@ -27,13 +27,21 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String email;
 
-    @NotBlank
     private String password;
 
     @NotBlank
     private String fullName;
 
     private String phone;
+
+    private String pictureUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private AuthProviderType authProvider = AuthProviderType.LOCAL;
+
+    @Column(unique = true)
+    private String providerSubject;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -61,6 +69,10 @@ public class User implements UserDetails {
 
     public enum Role {
         ADMIN, AGENT, FARMER
+    }
+
+    public enum AuthProviderType {
+        LOCAL, GOOGLE
     }
 
     @Override

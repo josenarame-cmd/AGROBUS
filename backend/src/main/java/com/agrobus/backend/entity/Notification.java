@@ -1,5 +1,6 @@
 package com.agrobus.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,6 +30,13 @@ public class Notification {
 
     private String recipientRole;
 
+    /**
+     * Stored as "is_read" in the DB. Lombok generates isRead() / setRead(),
+     * which is correct for boolean fields. @JsonProperty forces the JSON key
+     * to "read" (not "isRead") so the frontend receives a consistent field name.
+     */
+    @Column(name = "is_read", nullable = false)
+    @JsonProperty("read")
     private boolean read;
 
     @Column(updatable = false)

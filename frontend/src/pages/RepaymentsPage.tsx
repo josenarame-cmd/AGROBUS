@@ -19,7 +19,10 @@ export default function RepaymentsPage() {
       const [repRes, totalRes] = await Promise.all([repaymentAPI.getAll(), repaymentAPI.getTotal()]);
       setRepayments(repRes.data);
       setTotalRepaid(totalRes.data || 0);
-    } catch { setRepayments([]); }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message ?? 'Failed to load repayments');
+      setRepayments([]);
+    }
     finally { setLoading(false); }
   };
 
@@ -33,13 +36,18 @@ export default function RepaymentsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await repaymentAPI.record({ loan: { id: parseInt(form.loan.id) }, amountPaid: parseFloat(form.amountPaid), paymentMethod: form.paymentMethod, transactionRef: form.transactionRef });
-      toast.success('Payment recorded');
+      await repaymentAPI.record({
+        loan: { id: parseInt(form.loan.id) },
+        amountPaid: parseFloat(form.amountPaid),
+        paymentMethod: form.paymentMethod,
+        transactionRef: form.transactionRef || undefined,
+      });
+      toast.success('Payment recorded successfully');
       setShowModal(false);
       setForm({ loan: { id: '' }, amountPaid: '', paymentMethod: 'MOBILE_MONEY', transactionRef: '' });
       fetchRepayments();
       fetchLoans();
-    } catch (err: any) { toast.error(err.response?.data?.message || 'Failed'); }
+    } catch (err: any) { toast.error(err?.response?.data?.message ?? 'Failed to record payment'); }
   };
 
   const fmt = (n: number) => new Intl.NumberFormat('en-RW', { style: 'currency', currency: 'RWF', maximumFractionDigits: 0 }).format(n || 0);

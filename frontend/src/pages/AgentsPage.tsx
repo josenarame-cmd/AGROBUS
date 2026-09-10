@@ -18,22 +18,24 @@ export default function AgentsPage() {
 
   const fetchAgents = async () => {
     setLoading(true);
-    try { const r = await agentAPI.getAll(); setAgents(r.data); } catch { setAgents([]); }
+    try { const r = await agentAPI.getAll(); setAgents(r.data); }
+    catch (err: any) { toast.error(err?.response?.data?.message ?? 'Failed to load agents'); setAgents([]); }
     finally { setLoading(false); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (editing) { await agentAPI.update(editing.id, form); toast.success('Updated'); }
-      else { await agentAPI.create(form); toast.success('Created'); }
+      if (editing) { await agentAPI.update(editing.id, form); toast.success('Agent updated'); }
+      else { await agentAPI.create(form); toast.success('Agent created'); }
       setShowModal(false); resetForm(); fetchAgents();
-    } catch (err: any) { toast.error(err.response?.data?.message || 'Failed'); }
+    } catch (err: any) { toast.error(err?.response?.data?.message ?? 'Failed to save agent'); }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm('Delete agent?')) return;
-    try { await agentAPI.delete(id); toast.success('Deleted'); fetchAgents(); } catch { toast.error('Failed'); }
+    try { await agentAPI.delete(id); toast.success('Agent deleted'); fetchAgents(); }
+    catch (err: any) { toast.error(err?.response?.data?.message ?? 'Failed to delete agent'); }
   };
 
   const openAssign = async (agent: any) => {
@@ -45,7 +47,7 @@ export default function AgentsPage() {
   const handleAssign = async () => {
     if (!selected || !assignFarmerId) return;
     try { await agentAPI.assignFarmer(selected.id, parseInt(assignFarmerId)); toast.success('Farmer assigned'); setShowAssign(false); setAssignFarmerId(''); fetchAgents(); }
-    catch { toast.error('Failed'); }
+    catch (err: any) { toast.error(err?.response?.data?.message ?? 'Assignment failed'); }
   };
 
   const openEdit = (a: any) => { setEditing(a); setForm({ fullName: a.fullName, phone: a.phone, assignedDistrict: a.assignedDistrict, status: a.status }); setShowModal(true); };

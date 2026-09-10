@@ -30,23 +30,44 @@ export default function LoansPage() {
     try {
       const res = statusFilter ? await loanAPI.getByStatus(statusFilter, { page, size: 10 }) : await loanAPI.getAll({ page, size: 10 });
       setLoans(res.data);
-    } catch { setLoans({ content: [], totalPages: 0 }); }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message ?? 'Failed to load loans');
+      setLoans({ content: [], totalPages: 0 });
+    }
     finally { setLoading(false); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await loanAPI.create({ farmer: { id: parseInt(form.farmer.id as string) }, cropType: form.cropType, requestedInputs: form.requestedInputs, quantity: parseFloat(form.quantity), estimatedCost: parseFloat(form.estimatedCost), farmSize: parseFloat(form.farmSize), season: form.season });
+      await loanAPI.create({
+        farmerId: parseInt(form.farmer.id as string),
+        cropType: form.cropType,
+        requestedInputs: form.requestedInputs,
+        quantity: form.quantity ? parseFloat(form.quantity) : undefined,
+        estimatedCost: parseFloat(form.estimatedCost),
+        farmSize: form.farmSize ? parseFloat(form.farmSize) : undefined,
+        season: form.season || undefined,
+      });
       toast.success('Loan request submitted');
       setShowModal(false);
       fetchLoans();
-    } catch (err: any) { toast.error(err.response?.data?.message || 'Failed'); }
+    } catch (err: any) { toast.error(err.response?.data?.message || 'Failed to submit loan'); }
   };
 
-  const handleApprove = async (id: number) => { try { await loanAPI.approve(id); toast.success('Approved'); fetchLoans(); } catch { toast.error('Failed'); } };
-  const handleReject = async () => { if (!selected) return; try { await loanAPI.reject(selected.id, rejectReason); toast.success('Rejected'); setShowReject(false); fetchLoans(); } catch { toast.error('Failed'); } };
-  const handleDeliver = async (id: number) => { try { await loanAPI.deliver(id); toast.success('Delivered'); fetchLoans(); } catch { toast.error('Failed'); } };
+  const handleApprove = async (id: number) => {
+    try { await loanAPI.approve(id); toast.success('Loan approved'); fetchLoans(); }
+    catch (err: any) { toast.error(err?.response?.data?.message ?? 'Failed to approve loan'); }
+  };
+  const handleReject = async () => {
+    if (!selected) return;
+    try { await loanAPI.reject(selected.id, rejectReason); toast.success('Loan rejected'); setShowReject(false); fetchLoans(); }
+    catch (err: any) { toast.error(err?.response?.data?.message ?? 'Failed to reject loan'); }
+  };
+  const handleDeliver = async (id: number) => {
+    try { await loanAPI.deliver(id); toast.success('Inputs marked as delivered'); fetchLoans(); }
+    catch (err: any) { toast.error(err?.response?.data?.message ?? 'Failed to mark as delivered'); }
+  };
   const fmt = (n: number) => new Intl.NumberFormat('en-RW', { style: 'currency', currency: 'RWF', maximumFractionDigits: 0 }).format(n || 0);
 
   return (

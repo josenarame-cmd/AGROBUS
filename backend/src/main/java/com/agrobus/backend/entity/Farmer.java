@@ -1,10 +1,10 @@
 package com.agrobus.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -48,8 +48,22 @@ public class Farmer {
     @Column(nullable = false)
     private Status status;
 
+    /**
+     * Optional link to the User account that owns this farmer profile.
+     * Set when a FARMER user self-registers or when an admin links an existing
+     * User account to a Farmer record. Allows the authenticated FARMER to
+     * look up their own Farmer record by userId.
+     */
+    @Column(name = "user_id")
+    private Long userId;
+
+    /**
+     * The field agent responsible for this farmer.
+     * Ignore the back-reference list on Agent to avoid infinite recursion.
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "agent_id")
+    @JsonIgnoreProperties({"assignedFarmers", "user", "hibernateLazyInitializer"})
     private Agent agent;
 
     @Column(updatable = false)
@@ -68,6 +82,21 @@ public class Farmer {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    // ── Credit score helpers ────────────────────────────────────────────────
+
+    private static final int SCORE_REPAYMENT_BONUS  =  10;
+    private static final int SCORE_REJECTION_PENALTY = 20;
+    private static final int SCORE_MIN = 300;
+    private static final int SCORE_MAX = 850;
+
+    public void applyRepaymentBonus() {
+        creditScore = Math.min(SCORE_MAX, (creditScore == null ? 500 : creditScore) + SCORE_REPAYMENT_BONUS);
+    }
+
+    public void applyRejectionPenalty() {
+        creditScore = Math.max(SCORE_MIN, (creditScore == null ? 500 : creditScore) - SCORE_REJECTION_PENALTY);
     }
 
     public enum Gender { MALE, FEMALE, OTHER }

@@ -1,5 +1,6 @@
 package com.agrobus.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -33,11 +34,22 @@ public class Agent {
     @Column(nullable = false)
     private Status status;
 
+    /**
+     * Suppress back-reference serialization — each Farmer already carries
+     * the agent summary; serialising the full list here causes recursion.
+     */
     @OneToMany(mappedBy = "agent", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"agent", "hibernateLazyInitializer"})
     private List<Farmer> assignedFarmers;
 
+    /**
+     * Linked User account — suppress password and collection fields.
+     */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @JsonIgnoreProperties({"password", "authorities", "accountNonExpired",
+            "accountNonLocked", "credentialsNonExpired", "enabled",
+            "hibernateLazyInitializer"})
     private User user;
 
     @Column(updatable = false)

@@ -6,6 +6,7 @@ import com.agrobus.backend.service.AgentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.Map;
 @RequestMapping("/api/agents")
 @RequiredArgsConstructor
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
+@PreAuthorize("hasAnyRole('ADMIN', 'AGENT')")
 public class AgentController {
 
     private final AgentService agentService;

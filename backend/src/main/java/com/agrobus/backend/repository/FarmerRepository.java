@@ -8,8 +8,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FarmerRepository extends JpaRepository<Farmer, Long> {
+
+    /** Find the Farmer profile linked to a User account. */
+    Optional<Farmer> findByUserId(Long userId);
     Page<Farmer> findByFullNameContainingIgnoreCase(String name, Pageable pageable);
     Page<Farmer> findByDistrict(String district, Pageable pageable);
     Page<Farmer> findByCropType(String cropType, Pageable pageable);

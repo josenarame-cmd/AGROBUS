@@ -1,5 +1,6 @@
 package com.agrobus.backend.controller;
 
+import com.agrobus.backend.dto.LoanRequest;
 import com.agrobus.backend.entity.Loan;
 import com.agrobus.backend.service.LoanService;
 import jakarta.validation.Valid;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,13 +19,14 @@ import java.util.Map;
 @RequestMapping("/api/loans")
 @RequiredArgsConstructor
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
+@PreAuthorize("hasAnyRole('ADMIN', 'AGENT')")
 public class LoanController {
 
     private final LoanService loanService;
 
     @PostMapping
-    public ResponseEntity<Loan> createLoan(@Valid @RequestBody Loan loan) {
-        return ResponseEntity.ok(loanService.createLoan(loan));
+    public ResponseEntity<Loan> createLoan(@Valid @RequestBody LoanRequest request) {
+        return ResponseEntity.ok(loanService.createLoan(request));
     }
 
     @PutMapping("/{id}/approve")

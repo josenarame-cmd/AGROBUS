@@ -1,5 +1,6 @@
 package com.agrobus.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -21,6 +22,7 @@ public class Loan {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "farmer_id", nullable = false)
+    @JsonIgnoreProperties({"agent", "hibernateLazyInitializer"})
     private Farmer farmer;
 
     @NotBlank

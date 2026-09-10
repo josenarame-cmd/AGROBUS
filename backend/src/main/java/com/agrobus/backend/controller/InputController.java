@@ -5,6 +5,7 @@ import com.agrobus.backend.service.InputService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,21 +15,25 @@ import java.util.Map;
 @RequestMapping("/api/inputs")
 @RequiredArgsConstructor
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
+@PreAuthorize("hasAnyRole('ADMIN', 'AGENT')")
 public class InputController {
 
     private final InputService inputService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENT')")
     public ResponseEntity<AgriculturalInput> createInput(@Valid @RequestBody AgriculturalInput input) {
         return ResponseEntity.ok(inputService.createInput(input));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENT')")
     public ResponseEntity<AgriculturalInput> updateInput(@PathVariable Long id, @Valid @RequestBody AgriculturalInput input) {
         return ResponseEntity.ok(inputService.updateInput(id, input));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENT')")
     public ResponseEntity<Void> deleteInput(@PathVariable Long id) {
         inputService.deleteInput(id);
         return ResponseEntity.noContent().build();

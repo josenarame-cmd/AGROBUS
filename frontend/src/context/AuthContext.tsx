@@ -1,18 +1,22 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authAPI } from '../services/api';
 
-interface User {
+export interface User {
   userId: number;
   email: string;
   fullName: string;
   role: string;
   token: string;
+  phone?: string;
+  pictureUrl?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   register: (data: any) => Promise<void>;
+  loginWithGoogleResponse: (userData: User) => void;
+  updateUserProfile: (data: { fullName: string; phone?: string }) => Promise<User>;
   logout: () => void;
   isAuthenticated: boolean;
   loading: boolean;
@@ -47,6 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       fullName: userData.fullName,
       role: userData.role,
       token: userData.token,
+      phone: userData.phone,
+      pictureUrl: userData.pictureUrl,
     };
     localStorage.setItem('agrobus_token', userData.token);
     localStorage.setItem('agrobus_user', JSON.stringify(userObj));
@@ -62,10 +68,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       fullName: userData.fullName,
       role: userData.role,
       token: userData.token,
+      phone: userData.phone,
+      pictureUrl: userData.pictureUrl,
     };
     localStorage.setItem('agrobus_token', userData.token);
     localStorage.setItem('agrobus_user', JSON.stringify(userObj));
     setUser(userObj);
+  };
+
+  const loginWithGoogleResponse = (userData: User) => {
+    localStorage.setItem('agrobus_token', userData.token);
+    localStorage.setItem('agrobus_user', JSON.stringify(userData));
+    setUser(userData);
+  };
+
+  const updateUserProfile = async (data: { fullName: string; phone?: string }) => {
+    const response = await authAPI.updateProfile(data);
+    const profile = response.data;
+    const updatedUser = { ...user, ...profile } as User;
+    localStorage.setItem('agrobus_user', JSON.stringify(updatedUser));
+    setUser(updatedUser);
+    return updatedUser;
   };
 
   const logout = () => {
@@ -75,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user, loading }}>
+    <AuthContext.Provider value={{ user, login, register, loginWithGoogleResponse, updateUserProfile, logout, isAuthenticated: !!user, loading }}>
       {children}
     </AuthContext.Provider>
   );

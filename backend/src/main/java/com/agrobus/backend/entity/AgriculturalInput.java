@@ -1,5 +1,6 @@
 package com.agrobus.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -33,6 +34,7 @@ public class AgriculturalInput {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer"})
     private Supplier supplier;
 
     @Column(precision = 10, scale = 2)

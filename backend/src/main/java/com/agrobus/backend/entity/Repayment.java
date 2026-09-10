@@ -1,5 +1,6 @@
 package com.agrobus.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,10 +21,12 @@ public class Repayment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "farmer_id", nullable = false)
+    @JsonIgnoreProperties({"agent", "hibernateLazyInitializer"})
     private Farmer farmer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "loan_id", nullable = false)
+    @JsonIgnoreProperties({"farmer", "hibernateLazyInitializer"})
     private Loan loan;
 
     @Column(precision = 12, scale = 2, nullable = false)

@@ -3,12 +3,15 @@ package com.agrobus.backend.controller;
 import com.agrobus.backend.dto.AuthRequest;
 import com.agrobus.backend.dto.AuthResponse;
 import com.agrobus.backend.dto.RegisterRequest;
+import com.agrobus.backend.dto.UpdateProfileRequest;
+import com.agrobus.backend.dto.UserProfileDTO;
 import com.agrobus.backend.entity.User;
 import com.agrobus.backend.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -33,8 +36,14 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
-        // This endpoint is protected by JWT filter, so if we reach here, the user is authenticated
-        return ResponseEntity.ok("Authenticated");
+    public ResponseEntity<UserProfileDTO> getCurrentUser(Authentication authentication) {
+        return ResponseEntity.ok(userService.getCurrentProfile(authentication));
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<UserProfileDTO> updateProfile(
+            @Valid @RequestBody UpdateProfileRequest request,
+            Authentication authentication) {
+        return ResponseEntity.ok(userService.updateCurrentProfile(authentication, request));
     }
 }

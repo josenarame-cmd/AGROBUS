@@ -30,7 +30,9 @@ export default function FarmersPage() {
     try {
       const res = await farmerAPI.search({ search: search || null, district: districtFilter || null, cropType: cropFilter || null, page, size: 10 });
       setFarmers(res.data);
-    } catch {
+    } catch (err: any) {
+      const msg = err?.response?.data?.message ?? err?.message ?? 'Failed to load farmers';
+      toast.error(msg);
       setFarmers({ content: [], totalPages: 0, totalElements: 0 });
     } finally {
       setLoading(false);
@@ -52,7 +54,7 @@ export default function FarmersPage() {
       resetForm();
       fetchFarmers();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Operation failed');
+      toast.error(err?.response?.data?.message ?? err?.message ?? 'Operation failed');
     }
   };
 
@@ -62,7 +64,9 @@ export default function FarmersPage() {
       await farmerAPI.delete(id);
       toast.success('Farmer deleted');
       fetchFarmers();
-    } catch { toast.error('Failed to delete farmer'); }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message ?? 'Failed to delete farmer');
+    }
   };
 
   const openEdit = (farmer: any) => {

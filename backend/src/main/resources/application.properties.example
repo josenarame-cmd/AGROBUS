@@ -1,0 +1,35 @@
+﻿# Copy this file to application.properties and fill in real values.
+# NEVER commit application.properties with real credentials.
+
+spring.application.name=AGROBUS
+server.port=8080
+
+spring.datasource.url=jdbc:h2:mem:agrobus_db;DB_CLOSE_DELAY=-1
+spring.datasource.driver-class-name=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.h2.console.enabled=true
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.format_sql=true
+
+jwt.secret=CHANGE_ME_USE_A_LONG_RANDOM_SECRET
+jwt.expiration=86400000
+
+spring.web.cors.allowed-origins=http://localhost:5173
+spring.web.cors.allowed-methods=GET,POST,PUT,DELETE,OPTIONS,PATCH
+spring.web.cors.allowed-headers=*
+
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+
+# Get from https://console.cloud.google.com -> APIs & Services -> Credentials
+spring.security.oauth2.client.registration.google.client-id=YOUR_GOOGLE_CLIENT_ID
+spring.security.oauth2.client.registration.google.client-secret=YOUR_GOOGLE_CLIENT_SECRET
+spring.security.oauth2.client.registration.google.scope=openid,profile,email
+spring.security.oauth2.client.registration.google.redirect-uri=http://localhost:8080/login/oauth2/code/google
+spring.security.oauth2.client.provider.google.issuer-uri=https://accounts.google.com
+
+app.frontend-url=http://localhost:5173

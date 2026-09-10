@@ -21,7 +21,10 @@ export default function InputsPage() {
     try {
       const res = categoryFilter ? await inputAPI.getByCategory(categoryFilter) : await inputAPI.getAll();
       setInputs(res.data);
-    } catch { setInputs([]); }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message ?? 'Failed to load inputs');
+      setInputs([]);
+    }
     finally { setLoading(false); }
   };
 
@@ -29,21 +32,22 @@ export default function InputsPage() {
     e.preventDefault();
     const payload = { ...form, quantityAvailable: parseInt(form.quantityAvailable), unitPrice: parseFloat(form.unitPrice), lowStockThreshold: parseInt(form.lowStockThreshold) };
     try {
-      if (editing) { await inputAPI.update(editing.id, payload); toast.success('Updated'); }
-      else { await inputAPI.create(payload); toast.success('Added'); }
+      if (editing) { await inputAPI.update(editing.id, payload); toast.success('Input updated'); }
+      else { await inputAPI.create(payload); toast.success('Input added'); }
       setShowModal(false); resetForm(); fetchInputs();
-    } catch (err: any) { toast.error(err.response?.data?.message || 'Failed'); }
+    } catch (err: any) { toast.error(err?.response?.data?.message ?? 'Failed to save input'); }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm('Delete this input?')) return;
-    try { await inputAPI.delete(id); toast.success('Deleted'); fetchInputs(); } catch { toast.error('Failed'); }
+    try { await inputAPI.delete(id); toast.success('Input deleted'); fetchInputs(); }
+    catch (err: any) { toast.error(err?.response?.data?.message ?? 'Failed to delete input'); }
   };
 
   const handleDistribute = async () => {
     if (!selected) return;
-    try { await inputAPI.distribute(selected.id, parseInt(distQty)); toast.success('Distributed'); setShowDistribute(false); setDistQty(''); fetchInputs(); }
-    catch (err: any) { toast.error(err.response?.data?.message || 'Failed'); }
+    try { await inputAPI.distribute(selected.id, parseInt(distQty)); toast.success('Distributed successfully'); setShowDistribute(false); setDistQty(''); fetchInputs(); }
+    catch (err: any) { toast.error(err?.response?.data?.message ?? 'Distribution failed'); }
   };
 
   const openEdit = (item: any) => {
