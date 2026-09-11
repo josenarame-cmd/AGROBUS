@@ -19,6 +19,7 @@ import FarmerFarmsPage from './pages/FarmerFarmsPage';
 import FarmerLoansPage from './pages/FarmerLoansPage';
 import FarmerRepaymentsPage from './pages/FarmerRepaymentsPage';
 import FarmerNotificationsPage from './pages/FarmerNotificationsPage';
+import SuppliersPage from './pages/SuppliersPage';
 import {
   Activity, BarChart3, BadgeDollarSign, Bell, CircleHelp, ClipboardList, CreditCard,
   HandCoins, Landmark, Lightbulb, Map, MessageCircleQuestion, Radio, Settings,
@@ -74,7 +75,8 @@ export default function App() {
             <Route path="agents" element={<RoleRoute roles={['ADMIN', 'AGENT']}><AgentsPage /></RoleRoute>} />
             <Route path="repayments" element={<RoleRoute roles={['ADMIN', 'AGENT']}><RepaymentsPage /></RoleRoute>} />
             <Route path="notifications" element={<RoleRoute roles={['ADMIN', 'AGENT']}><NotificationsPage /></RoleRoute>} />
-            <Route path="ussd" element={<RoleRoute roles={['ADMIN', 'AGENT']}><USSDPage /></RoleRoute>} />
+            <Route path="suppliers"     element={<RoleRoute roles={['ADMIN', 'AGENT']}><SuppliersPage /></RoleRoute>} />
+            <Route path="ussd"          element={<RoleRoute roles={['ADMIN', 'AGENT']}><USSDPage /></RoleRoute>} />
 
             <Route path="farmer/farms" element={<RoleRoute roles={['FARMER']}><FarmerFarmsPage /></RoleRoute>} />
             <Route path="farmer/loans" element={<RoleRoute roles={['FARMER']}><FarmerLoansPage /></RoleRoute>} />

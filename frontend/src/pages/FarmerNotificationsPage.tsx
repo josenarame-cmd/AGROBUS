@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Activity, Bell, Check, CheckCircle, RefreshCw, Truck, XCircle, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { farmerSelfAPI, notificationAPI } from '../services/api';
+import { farmerSelfAPI } from '../services/api';
 import { FarmerEmptyState, FarmerPageHeader, FarmerSectionHeader } from '../components/farmer/FarmerUi';
 
 interface Notification {
@@ -62,7 +62,7 @@ export default function FarmerNotificationsPage() {
 
   const markRead = async (id: number) => {
     try {
-      await notificationAPI.markAsRead(id);
+      await farmerSelfAPI.markNotificationRead(id);
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
       toast.success('Marked as read');
     } catch {
@@ -74,7 +74,7 @@ export default function FarmerNotificationsPage() {
     const unread = notifications.filter(n => !n.read);
     if (!unread.length) return;
     try {
-      await Promise.all(unread.map(n => notificationAPI.markAsRead(n.id)));
+      await Promise.all(unread.map(n => farmerSelfAPI.markNotificationRead(n.id)));
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       toast.success('All marked as read');
     } catch {

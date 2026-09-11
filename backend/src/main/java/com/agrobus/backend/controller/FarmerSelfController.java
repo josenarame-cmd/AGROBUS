@@ -132,6 +132,23 @@ public class FarmerSelfController {
                         user.getId(), PageRequest.of(page, size, Sort.by("createdAt").descending())));
     }
 
+    /**
+     * Farmer-scoped mark-as-read. Verifies the notification belongs to this user
+     * before marking it read, preventing cross-user tampering.
+     */
+    @PutMapping("/notifications/{id}/read")
+    public ResponseEntity<Notification> markMyNotificationRead(
+            @PathVariable Long id, Authentication auth) {
+        User user = currentUser(auth);
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Notification not found"));
+        if (!user.getId().equals(notification.getRecipientId())) {
+            return ResponseEntity.status(403).build();
+        }
+        notification.setRead(true);
+        return ResponseEntity.ok(notificationRepository.save(notification));
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /**

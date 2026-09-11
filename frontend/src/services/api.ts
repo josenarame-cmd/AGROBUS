@@ -60,12 +60,14 @@ export const farmAPI = {
 };
 
 export const farmerSelfAPI = {
-  getDashboard:       () => api.get('/farmer/dashboard'),
-  getMyLoans:         () => api.get('/farmer/loans'),
-  getMyRepayments:    () => api.get('/farmer/repayments'),
-  getMyNotifications: () => api.get('/farmer/notifications'),
+  getDashboard:         () => api.get('/farmer/dashboard'),
+  getMyLoans:           () => api.get('/farmer/loans'),
+  getMyRepayments:      () => api.get('/farmer/repayments'),
+  getMyNotifications:   () => api.get('/farmer/notifications'),
   getAllMyNotifications: (params?: { page?: number; size?: number }) =>
                            api.get('/farmer/notifications/all', { params }),
+  /** Farmer-scoped mark-as-read — avoids hitting the ADMIN-only endpoint */
+  markNotificationRead: (id: number) => api.put(`/farmer/notifications/${id}/read`),
 };
 
 // ── Loans (ADMIN / AGENT) ───────────────────────────────────────────────────
