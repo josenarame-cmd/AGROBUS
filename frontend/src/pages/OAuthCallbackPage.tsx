@@ -18,15 +18,13 @@ export default function OAuthCallbackPage() {
     const error = searchParams.get('error');
 
     if (error) {
-      toast.error(
-        error === 'account_conflict_or_disabled'
-          ? 'Use your existing AGROBUS password or contact an administrator.'
-          : 'Google sign-in failed. Please try again.',
-        {
-          id: 'google-oauth-error',
-        }
-      );
-
+      const messages: Record<string, string> = {
+        account_conflict_or_disabled: 'An account already exists with this email. Sign in with your password.',
+        missing_verified_email: 'Google did not provide a verified email. Try again.',
+        google_authentication_failed: 'Google sign-in failed. Try again or use email/password.',
+        oauth_login_failed: 'Sign-in failed. Make sure the backend is running and Google OAuth is configured.',
+      };
+      toast.error(messages[error] ?? 'Google sign-in failed. Please try again.', { id: 'google-oauth-error' });
       navigate('/login', { replace: true });
       return;
     }
