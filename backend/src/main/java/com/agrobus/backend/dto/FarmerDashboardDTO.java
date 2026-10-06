@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
+import com.agrobus.backend.entity.Farmer;
+
 /**
  * Personal financial summary returned to a logged-in FARMER.
  */
@@ -20,7 +22,10 @@ public class FarmerDashboardDTO {
     private String fullName;
     private Integer creditScore;
     private String district;
+    private String sector;
+    private Double farmSize;
     private String cropType;
+    private Farmer.Status status;
 
     private long totalLoans;
     private long pendingLoans;
@@ -34,4 +39,6 @@ public class FarmerDashboardDTO {
     private BigDecimal outstandingBalance;
 
     private long totalFarms;
+    private Double totalFarmsHectares;
+    private long uniqueCropsCount;
 }

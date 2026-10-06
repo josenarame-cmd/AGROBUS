@@ -21,19 +21,16 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           id={selectId}
           ref={ref}
           className={cn(
-            'flex h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900',
-            'focus:border-green-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-500/20',
-            'disabled:cursor-not-allowed disabled:opacity-50',
-            'transition-all appearance-none',
+            'flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 appearance-none',
             'bg-[url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3E%3C/svg%3E")] bg-[right_0.5rem_center] bg-[length:1.25rem] bg-no-repeat pr-8',
-            error && 'border-red-400',
+            error && 'border-destructive focus-visible:ring-destructive',
             className
           )}
           {...props}
         >
           {children}
         </select>
-        {error && <p className="text-xs text-red-500">{error}</p>}
+        {error && <p className="text-xs text-destructive font-medium">{error}</p>}
       </div>
     );
   }

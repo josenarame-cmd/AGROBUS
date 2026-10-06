@@ -50,22 +50,22 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-3">
       {toolbar && <div>{toolbar}</div>}
-      <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               {table.getHeaderGroups().map(headerGroup => (
-                <tr key={headerGroup.id} className="border-b border-slate-100 bg-slate-50">
+                <tr key={headerGroup.id} className="border-b bg-muted/50">
                   {headerGroup.headers.map(header => (
                     <th
                       key={header.id}
-                      className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+                      className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                       style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
                     >
                       {header.isPlaceholder ? null : (
                         header.column.getCanSort() ? (
                           <button
-                            className="flex items-center gap-1 hover:text-slate-800 transition-colors"
+                            className="flex items-center gap-1 hover:text-foreground transition-colors"
                             onClick={header.column.getToggleSortingHandler()}
                           >
                             {flexRender(header.column.columnDef.header, header.getContext())}
@@ -85,7 +85,7 @@ export function DataTable<TData, TValue>({
                 <tr>
                   <td colSpan={columns.length} className="py-16 text-center text-slate-400">
                     <div className="flex flex-col items-center gap-2">
-                      <svg className="h-6 w-6 animate-spin text-green-500" viewBox="0 0 24 24" fill="none">
+                      <svg className="h-6 w-6 animate-spin text-primary" viewBox="0 0 24 24" fill="none">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
                       </svg>
@@ -95,7 +95,7 @@ export function DataTable<TData, TValue>({
                 </tr>
               ) : table.getRowModel().rows.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length} className="py-16 text-center text-sm text-slate-400">
+                  <td colSpan={columns.length} className="py-16 text-center text-sm text-muted-foreground">
                     {emptyMessage}
                   </td>
                 </tr>
@@ -103,7 +103,7 @@ export function DataTable<TData, TValue>({
                 table.getRowModel().rows.map(row => (
                   <tr
                     key={row.id}
-                    className="border-b border-slate-50 transition-colors hover:bg-slate-50/60 last:border-0"
+                    className="border-b transition-colors hover:bg-muted/50 last:border-0"
                   >
                     {row.getVisibleCells().map(cell => (
                       <td key={cell.id} className="px-5 py-3.5">
@@ -121,10 +121,10 @@ export function DataTable<TData, TValue>({
       {/* Pagination */}
       {!loading && table.getPageCount() > 1 && (
         <div className="flex items-center justify-between px-1">
-          <p className="text-sm text-slate-500">
-            Page <span className="font-semibold text-slate-700">{table.getState().pagination.pageIndex + 1}</span>
-            {' '}of <span className="font-semibold text-slate-700">{table.getPageCount()}</span>
-            {' '}— <span className="font-semibold text-slate-700">{table.getFilteredRowModel().rows.length}</span> rows
+          <p className="text-sm text-muted-foreground">
+            Page <span className="font-semibold text-foreground">{table.getState().pagination.pageIndex + 1}</span>
+            {' '}of <span className="font-semibold text-foreground">{table.getPageCount()}</span>
+            {' '}— <span className="font-semibold text-foreground">{table.getFilteredRowModel().rows.length}</span> rows
           </p>
           <div className="flex items-center gap-1.5">
             <Button variant="outline" size="icon" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>

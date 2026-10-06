@@ -57,11 +57,12 @@ export default function LoginPage() {
       }
       navigate('/dashboard');
     } catch (err: any) {
+      const data = err?.response?.data;
       const msg =
-        err?.response?.data?.message ??
+        data?.message ??
+        (data?.errors ? Object.values(data.errors).join('. ') : null) ??
         (err?.response?.status === 401 ? 'Invalid email or password.' : null) ??
-        (err?.response?.status === 400 ? (err?.response?.data?.errors ? Object.values(err.response.data.errors).join('. ') : err?.response?.data?.message) : null) ??
-        (!err?.response ? 'Cannot reach AGROBUS. Make sure the backend is running on port 8080.' : null) ??
+        (!err?.response ? 'Cannot reach AGROBUS backend server on port 8080.' : null) ??
         'Authentication failed. Please try again.';
       setServerError(msg);
     } finally { setLoading(false); }
@@ -184,7 +185,7 @@ export default function LoginPage() {
               )}
             </div>
 
-            <Button type="submit" loading={loading} className="w-full h-12 text-base rounded-xl shadow-lg shadow-green-600/20">
+            <Button type="submit" loading={loading} className="w-full h-12 text-base rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30">
               {isLogin ? 'Sign in securely' : 'Create account'}
               {!loading && <ArrowRight className="w-4 h-4" />}
             </Button>

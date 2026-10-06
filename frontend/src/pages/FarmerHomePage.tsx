@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
-  ArrowRight, BarChart3, Bell, HandCoins, Landmark, MessageCircleQuestion,
+  ArrowRight, BarChart3, Bell, BrainCircuit, HandCoins, Landmark, MessageCircleQuestion,
   Package, RefreshCw, Sprout, Store, Tractor, TrendingUp, Wheat,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -29,6 +29,8 @@ interface FarmerDashboard {
   totalRepaid: number;
   outstandingBalance: number;
   totalFarms: number;
+  totalFarmsHectares: number;
+  uniqueCropsCount: number;
 }
 
 interface Notification {
@@ -126,8 +128,15 @@ export default function FarmerHomePage() {
             <FarmerStatCard
               label="My farms"
               value={loading ? '…' : String(dashboard?.totalFarms ?? 0)}
-              detail="Registered farm plots"
+              detail={loading ? '' : `${dashboard?.totalFarmsHectares ?? 0} hectares total`}
               icon={Tractor}
+            />
+            <FarmerStatCard
+              label="Unique crops"
+              value={loading ? '…' : String(dashboard?.uniqueCropsCount ?? 0)}
+              detail="Active crops grown"
+              icon={Wheat}
+              tone="green"
             />
             <FarmerStatCard
               label="Active loans"
@@ -185,8 +194,10 @@ export default function FarmerHomePage() {
           <div className="dashboard-actions-grid">
             <FarmerQuickAction to="/farmer/farms"        icon={Tractor}               label="My farms"        detail="View and manage your farms" />
             <FarmerQuickAction to="/farmer/loans"        icon={Landmark}              label="My loans"        detail="Track your credit applications" />
+            <FarmerQuickAction to="/farmer/loans"        icon={HandCoins}             label="Request a loan"  detail="Apply for agricultural input credit" state={{ openForm: true }} />
             <FarmerQuickAction to="/farmer/repayments"   icon={HandCoins}             label="Repayments"      detail="See your payment history" />
             <FarmerQuickAction to="/farmer/marketplace"  icon={Store}                 label="Buy inputs"      detail="Find agricultural supplies" />
+            <FarmerQuickAction to="/farmer/crop-recommendations" icon={BrainCircuit} label="AI farm advisor" detail="Analyze your farm conditions" />
             <FarmerQuickAction to="/farmer/ask-expert"   icon={MessageCircleQuestion} label="Ask an expert"   detail="Get practical guidance" />
             <FarmerQuickAction
               to="/farmer/notifications"

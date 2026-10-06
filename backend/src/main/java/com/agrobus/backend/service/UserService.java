@@ -64,15 +64,24 @@ public class UserService implements UserDetailsService {
      */
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already registered");
+        String email = request.getEmail().trim().toLowerCase();
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("Email address is already registered.");
+        }
+
+        String phone = (request.getPhone() != null && !request.getPhone().isBlank())
+                ? request.getPhone().trim()
+                : null;
+
+        if (phone != null && farmerRepository.existsByPhone(phone)) {
+            throw new IllegalArgumentException("Phone number (" + phone + ") is already registered to an account.");
         }
 
         User user = User.builder()
                 .fullName(request.getFullName().trim())
-                .email(request.getEmail().trim().toLowerCase())
+                .email(email)
                 .password(passwordEncoder.encode(request.getPassword()))
-                .phone(request.getPhone())
+                .phone(phone)
                 .authProvider(User.AuthProviderType.LOCAL)
                 .role(User.Role.FARMER)
                 .active(true)
@@ -82,13 +91,14 @@ public class UserService implements UserDetailsService {
 
         // Auto-create a Farmer profile linked to this User account
         // so the FARMER can immediately use /api/farmer/* endpoints.
-        if (!farmerRepository.findByUserId(user.getId()).isPresent()) {
+        if (farmerRepository.findByUserId(user.getId()).isEmpty()) {
+            String farmerPhone = (phone != null) ? phone : "PENDING-" + user.getId();
             Farmer farmer = Farmer.builder()
                     .fullName(user.getFullName())
-                    .nationalId("PENDING-" + user.getId())   // placeholder — agent should update
-                    .phone(user.getPhone() != null ? user.getPhone() : "PENDING-" + user.getId())
+                    .nationalId("PENDING-" + user.getId())
+                    .phone(farmerPhone)
                     .userId(user.getId())
-                    .district("Unknown")                      // agent should update
+                    .district("Unknown")
                     .status(Farmer.Status.ACTIVE)
                     .build();
             farmerRepository.save(farmer);

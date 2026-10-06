@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import LandingPage from './pages/LandingPage';
+import FeaturesPage from './pages/FeaturesPage';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
@@ -14,11 +16,13 @@ import NotificationsPage from './pages/NotificationsPage';
 import USSDPage from './pages/USSDPage';
 import FarmerHomePage from './pages/FarmerHomePage';
 import FarmerFeaturePage from './pages/FarmerFeaturePage';
+import FarmerAIAdvisorPage from './pages/FarmerAIAdvisorPage';
 import FarmerProfilePage from './pages/FarmerProfilePage';
 import FarmerFarmsPage from './pages/FarmerFarmsPage';
 import FarmerLoansPage from './pages/FarmerLoansPage';
 import FarmerRepaymentsPage from './pages/FarmerRepaymentsPage';
 import FarmerNotificationsPage from './pages/FarmerNotificationsPage';
+import FarmerCropsPage from './pages/FarmerCropsPage';
 import SuppliersPage from './pages/SuppliersPage';
 import {
   Activity, BarChart3, BadgeDollarSign, Bell, CircleHelp, ClipboardList, CreditCard,
@@ -64,10 +68,11 @@ export default function App() {
           }}
         />
         <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/features" element={<FeaturesPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
           <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<RoleAwareDashboard />} />
             <Route path="farmers" element={<RoleRoute roles={['ADMIN', 'AGENT']}><FarmersPage /></RoleRoute>} />
             <Route path="loans" element={<RoleRoute roles={['ADMIN', 'AGENT']}><LoansPage /></RoleRoute>} />
@@ -82,7 +87,7 @@ export default function App() {
             <Route path="farmer/loans" element={<RoleRoute roles={['FARMER']}><FarmerLoansPage /></RoleRoute>} />
             <Route path="farmer/repayments" element={<RoleRoute roles={['FARMER']}><FarmerRepaymentsPage /></RoleRoute>} />
             <Route path="farmer/notifications" element={<RoleRoute roles={['FARMER']}><FarmerNotificationsPage /></RoleRoute>} />
-            <Route path="farmer/crops" element={<FarmerFeature title="Crops" section="My Farm" description="Track crop records and their lifecycle across your farms." icon={Wheat} />} />
+            <Route path="farmer/crops" element={<RoleRoute roles={['FARMER']}><FarmerCropsPage /></RoleRoute>} />
             <Route path="farmer/activities" element={<FarmerFeature title="Farm Activities" section="My Farm" description="Keep a record of work completed on your farms." icon={ClipboardList} />} />
             <Route path="farmer/monitoring" element={<FarmerFeature title="Farm Monitoring" section="My Farm" description="Review connected farm monitoring data when devices and services are available." icon={Activity} />} />
             <Route path="farmer/marketplace" element={<FarmerFeature title="Buy Agricultural Inputs" section="Marketplace" description="Browse agricultural inputs from connected suppliers and place orders when the marketplace service is available." icon={Store} />} />
@@ -94,14 +99,14 @@ export default function App() {
             <Route path="farmer/performance" element={<FarmerFeature title="Farm Performance" section="Farm Management" description="View production, expense, and revenue measures calculated from your real farm records." icon={BarChart3} />} />
             <Route path="farmer/ask-expert" element={<FarmerFeature title="Ask an Expert" section="Agricultural Support" description="Submit crop and farming questions when the advisory service is connected." icon={MessageCircleQuestion} />} />
             <Route path="farmer/advice" element={<FarmerFeature title="Agricultural Advice" section="Agricultural Support" description="Read responses and advice addressed to your authenticated farmer account." icon={Lightbulb} />} />
-            <Route path="farmer/crop-recommendations" element={<FarmerFeature title="Crop Recommendations" section="Agricultural Support" description="Get recommendations based on your real farm and crop information when available." icon={CircleHelp} />} />
+            <Route path="farmer/crop-recommendations" element={<FarmerAIAdvisorPage />} />
             <Route path="farmer/finance" element={<FarmerFeature title="Financial Summary" section="Finance" description="See a summary calculated from your own loans, repayments, and sales." icon={CreditCard} />} />
             <Route path="farmer/ussd" element={<FarmerFeature title="USSD Services" section="Services" description="USSD access is planned around *810#. This page does not simulate a real transaction." icon={Radio} />} />
             <Route path="farmer/iot" element={<FarmerFeature title="Smart Farm / IoT" section="Services" description="Connect farm devices here when the Smart Farm monitoring service becomes available." icon={Radio} />} />
             <Route path="farmer/profile" element={<RoleRoute roles={['FARMER']}><FarmerProfilePage /></RoleRoute>} />
             <Route path="farmer/settings" element={<FarmerFeature title="Settings" section="Account" description="Account settings will become available as profile-management APIs are introduced." icon={Settings} />} />
           </Route>
-          <Route path="*" element={<Navigate to="/dashboard" />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

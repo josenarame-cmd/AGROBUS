@@ -6,7 +6,7 @@ export function Spinner({ className, size = 'md' }: SpinnerProps) {
   const sizes = { sm: 'h-4 w-4', md: 'h-6 w-6', lg: 'h-10 w-10' };
   return (
     <svg
-      className={cn('animate-spin text-green-600', sizes[size], className)}
+      className={cn('animate-spin text-primary', sizes[size], className)}
       viewBox="0 0 24 24" fill="none"
     >
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -17,7 +17,7 @@ export function Spinner({ className, size = 'md' }: SpinnerProps) {
 
 export function PageSpinner({ label = 'Loading…' }: { label?: string }) {
   return (
-    <div className="flex h-64 flex-col items-center justify-center gap-3 text-slate-400">
+    <div className="flex h-64 flex-col items-center justify-center gap-3 text-muted-foreground">
       <Spinner size="lg" />
       <p className="text-sm font-medium">{label}</p>
     </div>

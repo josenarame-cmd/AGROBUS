@@ -15,7 +15,6 @@ import java.math.BigDecimal;
 @Data
 public class LoanRequest {
 
-    @NotNull(message = "Farmer ID is required")
     private Long farmerId;
 
     @NotBlank(message = "Crop type is required")

@@ -50,6 +50,11 @@ public class SecurityConfig {
                 .authorizedClientRepository(noOpAuthorizedClientRepository)
                 .successHandler(oauth2SuccessHandler)
                 .failureHandler(oauth2FailureHandler))
+            .exceptionHandling(exceptions -> exceptions
+                .defaultAuthenticationEntryPointFor(
+                    new org.springframework.security.web.authentication.HttpStatusEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/**")
+                ))
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

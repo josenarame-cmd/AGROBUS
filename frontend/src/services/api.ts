@@ -60,8 +60,19 @@ export const farmAPI = {
 };
 
 export const farmerSelfAPI = {
+  getProfile:           () => api.get('/farmer/profile'),
+  updateProfile:        (data: unknown) => api.put('/farmer/profile', data),
+  getMyFarms:        () => api.get('/farmer/farms'),
+  getCrops:          () => api.get('/farmer/crops'),
+  getCropsByFarm:    (farmId: number) => api.get(`/farmer/crops/farm/${farmId}`),
+  getCropsByStatus:  (status: string) => api.get(`/farmer/crops/status/${status}`),
+  getCrop:           (id: number) => api.get(`/farmer/crops/${id}`),
+  createCrop:        (data: unknown) => api.post('/farmer/crops', data),
+  updateCrop:        (id: number, data: unknown) => api.put(`/farmer/crops/${id}`, data),
+  deleteCrop:        (id: number) => api.delete(`/farmer/crops/${id}`),
   getDashboard:         () => api.get('/farmer/dashboard'),
   getMyLoans:           () => api.get('/farmer/loans'),
+  requestLoan:          (data: unknown) => api.post('/farmer/loans', data),
   getMyRepayments:      () => api.get('/farmer/repayments'),
   getMyNotifications:   () => api.get('/farmer/notifications'),
   getAllMyNotifications: (params?: { page?: number; size?: number }) =>
@@ -146,3 +157,9 @@ export const dashboardAPI = {
 };
 
 export default api;
+
+
+// ── Farmer AI Advisor ───────────────────────────────────────────────────────
+export const farmerAIAPI = {
+  recommend: (data: unknown) => api.post('/farmer/ai/recommend', data),
+};

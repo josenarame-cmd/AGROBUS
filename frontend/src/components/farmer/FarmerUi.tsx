@@ -77,9 +77,9 @@ export function FarmerServiceState({ connected, retry }: { connected: boolean; r
   );
 }
 
-export function FarmerQuickAction({ to, label, icon: Icon, detail }: { to: string; label: string; icon: LucideIcon; detail: string }) {
+export function FarmerQuickAction({ to, label, icon: Icon, detail, state }: { to: string; label: string; icon: LucideIcon; detail: string; state?: Record<string, unknown> }) {
   return (
-    <Link to={to} className="farmer-quick-action">
+    <Link to={to} state={state} className="farmer-quick-action">
       <div className="farmer-quick-icon"><Icon className="h-5 w-5" /></div>
       <div className="min-w-0 flex-1"><p className="font-semibold text-slate-900">{label}</p><p className="mt-1 truncate text-xs text-slate-500">{detail}</p></div>
       <ArrowRight className="h-4 w-4 flex-shrink-0 text-slate-400" />

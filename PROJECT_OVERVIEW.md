@@ -318,3 +318,33 @@ npm run dev
 | HTTP client | Axios |
 | UI icons | Lucide React |
 | Build | Maven (backend), npm (frontend) |
+
+## Hackathon AI Prototype — Added
+
+The farmer experience now includes an **AI Farm Advisor** at `/farmer/crop-recommendations`.
+
+### AI recommendation flow
+
+```text
+Farmer / Farm
+      ↓
+Soil + moisture + temperature + rainfall data
+      ↓
+AgroBus Explainable AI v1
+      ↓
+Crop fit score + confidence + reasons
+      ↓
+Recommended seeds + fertilizer + protection inputs
+      ↓
+Existing AgroBus input/credit workflow
+```
+
+### New endpoints
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/api/farmer/ai/recommend` | FARMER | Returns an explainable crop and input recommendation from structured farm conditions |
+
+The current hackathon model is intentionally **explainable and deterministic**. It scores candidate crops against soil type, pH, moisture, temperature and expected rainfall. It is designed as a prototype inference layer that can later be replaced or augmented with a trained ML model and live IoT/weather data.
+
+The UI explicitly identifies the output as a prototype recommendation and advises validation with local agronomy/extension guidance before field use.

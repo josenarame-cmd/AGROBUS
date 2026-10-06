@@ -1,11 +1,15 @@
 package com.agrobus.backend.controller;
 
 import com.agrobus.backend.dto.FarmerDashboardDTO;
+import com.agrobus.backend.dto.FarmerProfileDTO;
+import com.agrobus.backend.dto.FarmerProfileUpdateRequest;
+import com.agrobus.backend.dto.LoanRequest;
 import com.agrobus.backend.entity.Farmer;
 import com.agrobus.backend.entity.Loan;
 import com.agrobus.backend.entity.Notification;
 import com.agrobus.backend.entity.Repayment;
 import com.agrobus.backend.entity.User;
+import com.agrobus.backend.entity.Farm;
 import com.agrobus.backend.exception.ResourceNotFoundException;
 import com.agrobus.backend.repository.FarmRepository;
 import com.agrobus.backend.repository.FarmerRepository;
@@ -13,6 +17,7 @@ import com.agrobus.backend.repository.LoanRepository;
 import com.agrobus.backend.repository.NotificationRepository;
 import com.agrobus.backend.repository.RepaymentRepository;
 import com.agrobus.backend.repository.UserRepository;
+import com.agrobus.backend.service.LoanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -21,6 +26,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -41,6 +47,7 @@ public class FarmerSelfController {
     private final UserRepository       userRepository;
     private final FarmerRepository     farmerRepository;
     private final LoanRepository       loanRepository;
+    private final LoanService          loanService;
     private final RepaymentRepository  repaymentRepository;
     private final NotificationRepository notificationRepository;
     private final FarmRepository       farmRepository;
@@ -68,14 +75,31 @@ public class FarmerSelfController {
                 .map(Loan::getRemainingBalance)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        long farmCount = farmRepository.countByOwnerId(resolveFarmerUserId(auth));
+        List<Farm> farms = farmRepository.findByOwnerIdOrderByCreatedAtDesc(resolveFarmerUserId(auth));
+        
+        long farmCount = farms.size();
+        
+        Double totalFarmsHectares = farms.stream()
+            .map(f -> f.getSizeHectares())
+            .filter(size -> size != null)
+            .reduce(0.0, (a, b) -> a + b);
+            
+        long uniqueCropsCount = farms.stream()
+            .map(f -> f.getPrimaryCrop())
+            .filter(crop -> crop != null && !crop.trim().isEmpty())
+            .map(c -> c.trim().toLowerCase())
+            .distinct()
+            .count();
 
         FarmerDashboardDTO dto = FarmerDashboardDTO.builder()
                 .farmerId(farmer.getId())
                 .fullName(farmer.getFullName())
                 .creditScore(farmer.getCreditScore())
                 .district(farmer.getDistrict())
+                .sector(farmer.getSector())
+                .farmSize(farmer.getFarmSize())
                 .cropType(farmer.getCropType())
+                .status(farmer.getStatus())
                 .totalLoans(loans.size())
                 .pendingLoans(loans.stream().filter(l -> l.getStatus() == Loan.LoanStatus.PENDING).count())
                 .approvedLoans(loans.stream().filter(l -> l.getStatus() == Loan.LoanStatus.APPROVED).count())
@@ -86,9 +110,47 @@ public class FarmerSelfController {
                 .totalRepaid(totalRepaid)
                 .outstandingBalance(outstandingBalance)
                 .totalFarms(farmCount)
+                .totalFarmsHectares(totalFarmsHectares)
+                .uniqueCropsCount(uniqueCropsCount)
                 .build();
 
         return ResponseEntity.ok(dto);
+    }
+
+    // ── Extended Farmer Profile ───────────────────────────────────────────────
+
+    @GetMapping("/profile")
+    public ResponseEntity<FarmerProfileDTO> getFarmerProfile(Authentication auth) {
+        Farmer farmer = resolveFarmer(auth);
+        return ResponseEntity.ok(toFarmerProfileDTO(farmer));
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<FarmerProfileDTO> updateFarmerProfile(
+            @Valid @RequestBody FarmerProfileUpdateRequest request, Authentication auth) {
+        Farmer farmer = resolveFarmer(auth);
+        
+        farmer.setNationalId(request.getNationalId().trim());
+        farmer.setDistrict(request.getDistrict().trim());
+        
+        if (request.getSector() != null && !request.getSector().isBlank()) {
+            farmer.setSector(request.getSector().trim());
+        }
+        if (request.getFarmSize() != null) {
+            farmer.setFarmSize(request.getFarmSize());
+        }
+        if (request.getCropType() != null && !request.getCropType().isBlank()) {
+            farmer.setCropType(request.getCropType().trim());
+        }
+        if (request.getGender() != null && !request.getGender().isBlank()) {
+            try {
+                farmer.setGender(Farmer.Gender.valueOf(request.getGender().toUpperCase()));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        
+        Farmer saved = farmerRepository.save(farmer);
+        return ResponseEntity.ok(toFarmerProfileDTO(saved));
     }
 
     // ── Own loans ─────────────────────────────────────────────────────────────
@@ -100,6 +162,15 @@ public class FarmerSelfController {
         // sort newest first
         loans.sort((a, b) -> b.getRequestDate().compareTo(a.getRequestDate()));
         return ResponseEntity.ok(loans);
+    }
+
+    @PostMapping("/loans")
+    public ResponseEntity<Loan> requestLoan(@Valid @RequestBody LoanRequest request, Authentication auth) {
+        Farmer farmer = resolveFarmer(auth);
+        // Force the requested loan to be linked to the current authenticated farmer
+        request.setFarmerId(farmer.getId());
+        Loan loan = loanService.createLoan(request);
+        return ResponseEntity.ok(loan);
     }
 
     // ── Own repayments ────────────────────────────────────────────────────────
@@ -169,5 +240,22 @@ public class FarmerSelfController {
     private User currentUser(Authentication auth) {
         return userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("Authenticated user not found"));
+    }
+
+    private FarmerProfileDTO toFarmerProfileDTO(Farmer farmer) {
+        return FarmerProfileDTO.builder()
+                .farmerId(farmer.getId())
+                .fullName(farmer.getFullName())
+                .nationalId(farmer.getNationalId())
+                .phone(farmer.getPhone())
+                .gender(farmer.getGender())
+                .district(farmer.getDistrict())
+                .sector(farmer.getSector())
+                .farmSize(farmer.getFarmSize())
+                .cropType(farmer.getCropType())
+                .creditScore(farmer.getCreditScore())
+                .status(farmer.getStatus())
+                .registrationDate(farmer.getRegistrationDate())
+                .build();
     }
 }
