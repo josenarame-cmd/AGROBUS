@@ -29,6 +29,7 @@ public class Notification {
 
     private String recipientRole;
 
+    @Column(name = "is_read")
     private boolean read;
 
     @Column(updatable = false)
