@@ -22,3 +22,6 @@ frontend/coverage/
 *.swp
 *.swo
 *.log
+
+# Local secrets (Google OAuth keys)
+backend/src/main/resources/application-local.properties
