@@ -47,6 +47,7 @@ export default function FarmersPage() {
   const [search, setSearch]     = useState('');
   const [districtFilter, setDist] = useState('');
   const [cropFilter, setCrop]   = useState('');
+  const [statusFilter, setStatus] = useState('');
   const [districts, setDistricts] = useState<string[]>([]);
   const [cropTypes, setCropTypes] = useState<string[]>([]);
   const [form, setForm]         = useState(EMPTY_FORM);
@@ -76,13 +77,15 @@ export default function FarmersPage() {
     if (search)        d = d.filter(f => `${f.fullName} ${f.nationalId} ${f.phone}`.toLowerCase().includes(search.toLowerCase()));
     if (districtFilter) d = d.filter(f => f.district === districtFilter);
     if (cropFilter)     d = d.filter(f => f.cropType === cropFilter);
+    if (statusFilter)   d = d.filter(f => f.status === statusFilter);
     return d;
-  }, [farmers, search, districtFilter, cropFilter]);
+  }, [farmers, search, districtFilter, cropFilter, statusFilter]);
 
   const stats = useMemo(() => ({
     total:    farmers.length,
     active:   farmers.filter(f => f.status === 'ACTIVE').length,
     assigned: farmers.filter(f => f.agent).length,
+    linked:   farmers.filter(f => f.userId != null).length,
     avgScore: farmers.length ? Math.round(farmers.reduce((s, f) => s + (f.creditScore ?? 500), 0) / farmers.length) : 0,
   }), [farmers]);
 
@@ -166,29 +169,36 @@ export default function FarmersPage() {
       }
     },
     {
+      accessorKey: 'userId',
+      header: 'Farmer portal',
+      cell: ({ row: { original: f } }) => f.userId != null
+        ? <Badge variant="blue">Linked · #{f.userId}</Badge>
+        : <Badge variant="secondary">Not linked</Badge>,
+    },
+    {
       id: 'actions', header: '', size: 80,
       cell: ({ row }) => (
         <div className="flex items-center gap-1">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon-sm" onClick={() => openEdit(row.original)}>
+                <Button variant="ghost" size="icon-sm" aria-label={`Edit ${row.original.fullName}`} onClick={() => openEdit(row.original)}>
                   <Edit2 className="h-3.5 w-3.5 text-blue-500" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Edit farmer</TooltipContent>
+              <TooltipContent>Edit farmer profile</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon-sm" onClick={() => openLink(row.original)}>
+                <Button variant="ghost" size="icon-sm" aria-label={`Link farmer portal account for ${row.original.fullName}`} onClick={() => openLink(row.original)}>
                   <Link className="h-3.5 w-3.5 text-purple-500" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Link user account</TooltipContent>
+              <TooltipContent>Link FARMER login account</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon-sm" onClick={() => handleDelete(row.original.id)}>
+                <Button variant="ghost" size="icon-sm" aria-label={`Delete ${row.original.fullName}`} onClick={() => handleDelete(row.original.id)}>
                   <Trash2 className="h-3.5 w-3.5 text-red-400" />
                 </Button>
               </TooltipTrigger>
@@ -205,71 +215,90 @@ export default function FarmersPage() {
   return (
     <TooltipProvider>
     <div className="space-y-6 animate-fade-in">
-      <PageHeader title="Farmer Management" description="Register and manage farmers across all districts" icon={Users}>
-        <Button onClick={openCreate}><UserPlus className="h-4 w-4" /> Register Farmer</Button>
+      <PageHeader title="Farmers" description="Manage farmer profiles and field assignments. Profiles are separate from login accounts; link an existing FARMER account to enable portal access." icon={Users}>
+        <Button className="!rounded-md !bg-[#4dbbc2] !text-white hover:!bg-[#3aa8b0]" onClick={openCreate}><UserPlus className="h-4 w-4" /> Register Farmer</Button>
       </PageHeader>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-5">
         <StatCard title="Total Farmers"  value={stats.total}    icon={Users}      iconBg="bg-blue-100"   iconColor="text-blue-600" />
         <StatCard title="Active"         value={stats.active}   icon={UserCheck}  iconBg="bg-green-100"  iconColor="text-green-600" />
         <StatCard title="Assigned"       value={stats.assigned} icon={UserPlus}   iconBg="bg-purple-100" iconColor="text-purple-600" />
+        <StatCard title="Portal Accounts" value={stats.linked} icon={Link}       iconBg="bg-indigo-100" iconColor="text-indigo-600" />
         <StatCard title="Avg Credit"     value={stats.avgScore} icon={TrendingUp} iconBg="bg-amber-100"  iconColor="text-amber-600" />
       </div>
 
       {/* Filters toolbar */}
-      <div className="flex flex-wrap gap-3">
+      <section aria-label="Filter farmer records" className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div>
+          <h2 className="text-sm font-semibold text-slate-900">Find a farmer</h2>
+          <p className="mt-0.5 text-xs text-slate-500">Search by name, national ID, or phone; narrow results by location, crop, or status.</p>
+        </div>
+        <div className="flex flex-wrap gap-3">
         <div className="relative min-w-[220px] flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search name, phone, ID…"
+            aria-label="Search farmers by name, national ID, or phone"
+            placeholder="Name, national ID, or phone"
             className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-4 text-sm focus:border-green-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-500/20"
           />
         </div>
         <select value={districtFilter} onChange={e => setDist(e.target.value)}
+          aria-label="Filter by district"
           className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm focus:border-green-500 focus:outline-none min-w-[150px]">
           <option value="">All Districts</option>
           {districts.map(d => <option key={d}>{d}</option>)}
         </select>
         <select value={cropFilter} onChange={e => setCrop(e.target.value)}
+          aria-label="Filter by crop"
           className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm focus:border-green-500 focus:outline-none min-w-[150px]">
           <option value="">All Crops</option>
           {cropTypes.map(c => <option key={c}>{c}</option>)}
         </select>
-        {(search || districtFilter || cropFilter) && (
-          <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setDist(''); setCrop(''); }}>
+        <select value={statusFilter} onChange={e => setStatus(e.target.value)}
+          aria-label="Filter by farmer status"
+          className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm focus:border-green-500 focus:outline-none min-w-[150px]">
+          <option value="">All Statuses</option>
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
+        </select>
+        {(search || districtFilter || cropFilter || statusFilter) && (
+          <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setDist(''); setCrop(''); setStatus(''); }}>
             Clear filters
           </Button>
         )}
-      </div>
+        </div>
+        <p aria-live="polite" className="text-xs text-slate-500">
+          Showing <span className="font-semibold text-slate-700">{filtered.length}</span> of {farmers.length} farmer{farmers.length === 1 ? '' : 's'}
+        </p>
+      </section>
 
       <DataTable columns={columns} data={filtered} loading={loading}
-        emptyMessage="No farmers match your search." pageSize={12} />
+        emptyMessage={farmers.length ? 'No farmers match these filters. Clear filters or try another search.' : 'No farmer profiles yet. Register a farmer to get started.'}
+        pageSize={12} />
 
       {/* Link user dialog */}
       <Dialog open={linkOpen} onOpenChange={v => { setLinkOpen(v); if (!v) setLinkUserId(''); }}>
         <DialogContent size="sm">
           <DialogHeader>
-            <DialogTitle>Link User Account</DialogTitle>
+            <DialogTitle>Connect Farmer Portal Login</DialogTitle>
             <DialogDescription>
-              Enter the User ID to link to <strong>{linkFarmer?.fullName}</strong>.
-              This allows that user to access farmer self-service endpoints.
-              {linkFarmer?.userId && <span className="mt-1 block text-amber-600">Currently linked to User #{linkFarmer.userId}</span>}
+              Link an existing FARMER login account to <strong>{linkFarmer?.fullName}</strong>. The linked account can then access this farmer&apos;s self-service records.
+              {linkFarmer?.userId != null && <span className="mt-1 block text-amber-600">Currently linked to User #{linkFarmer.userId}. Saving a different ID replaces this link.</span>}
             </DialogDescription>
           </DialogHeader>
           <DialogBody>
-            <Input label="User ID" type="number" required value={linkUserId}
+            <Input label="FARMER login account ID" type="number" min="1" step="1" required value={linkUserId}
               onChange={e => setLinkUserId(e.target.value)}
-              placeholder="e.g. 3" />
+              placeholder="Enter the account ID" />
             <p className="mt-2 text-xs text-slate-400">
-              Tip: Find the user ID from the H2 console at{' '}
-              <code className="rounded bg-slate-100 px-1">localhost:8080/h2-console</code> or from the users table.
+              Use the account&apos;s ID from the login users table. This is not the farmer profile ID.
             </p>
           </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setLinkOpen(false)}>Cancel</Button>
-            <Button loading={linking} disabled={!linkUserId} onClick={handleLink}>Link Account</Button>
+            <Button loading={linking} disabled={!/^[1-9]\d*$/.test(linkUserId)} onClick={handleLink}>Link Account</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

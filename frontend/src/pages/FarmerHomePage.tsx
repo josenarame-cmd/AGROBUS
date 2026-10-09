@@ -1,9 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
-  ArrowRight, BarChart3, Bell, BrainCircuit, HandCoins, Landmark, MessageCircleQuestion,
-  Package, RefreshCw, Sprout, Store, Tractor, TrendingUp, Wheat,
+  Bell, BrainCircuit, HandCoins, Landmark, MapPin, RefreshCw, Sprout, Tractor, TrendingUp, Wheat,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { farmerSelfAPI } from '../services/api';
 import {
@@ -124,7 +122,7 @@ export default function FarmerHomePage() {
         {/* ── Stat cards ──────────────────────────────────────────────────── */}
         <section>
           <FarmerSectionHeader title="Your farm at a glance" description="Live figures from your account." />
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <FarmerStatCard
               label="My farms"
               value={loading ? '…' : String(dashboard?.totalFarms ?? 0)}
@@ -132,9 +130,9 @@ export default function FarmerHomePage() {
               icon={Tractor}
             />
             <FarmerStatCard
-              label="Unique crops"
+              label="Primary crops"
               value={loading ? '…' : String(dashboard?.uniqueCropsCount ?? 0)}
-              detail="Active crops grown"
+              detail="From your farm profiles"
               icon={Wheat}
               tone="green"
             />
@@ -193,12 +191,13 @@ export default function FarmerHomePage() {
           <FarmerSectionHeader title="What would you like to do?" description="Shortcuts into your everyday farm work." />
           <div className="dashboard-actions-grid">
             <FarmerQuickAction to="/farmer/farms"        icon={Tractor}               label="My farms"        detail="View and manage your farms" />
+            <FarmerQuickAction to="/farmer/crops"        icon={Wheat}                 label="My crops"        detail="Manage crop cycles on your farms" />
+            <FarmerQuickAction to="/farmer/activities"   icon={Sprout}                label="Farm activities" detail="Log and review crop work" />
             <FarmerQuickAction to="/farmer/loans"        icon={Landmark}              label="My loans"        detail="Track your credit applications" />
             <FarmerQuickAction to="/farmer/loans"        icon={HandCoins}             label="Request a loan"  detail="Apply for agricultural input credit" state={{ openForm: true }} />
             <FarmerQuickAction to="/farmer/repayments"   icon={HandCoins}             label="Repayments"      detail="See your payment history" />
-            <FarmerQuickAction to="/farmer/marketplace"  icon={Store}                 label="Buy inputs"      detail="Find agricultural supplies" />
-            <FarmerQuickAction to="/farmer/crop-recommendations" icon={BrainCircuit} label="AI farm advisor" detail="Analyze your farm conditions" />
-            <FarmerQuickAction to="/farmer/ask-expert"   icon={MessageCircleQuestion} label="Ask an expert"   detail="Get practical guidance" />
+            <FarmerQuickAction to="/farmer/soil-analysis" icon={MapPin}               label="Soil analysis"   detail="Review soil results for your farms" />
+            <FarmerQuickAction to="/farmer/intelligence" icon={BrainCircuit}          label="Farm insights"   detail="Explore recommendations from your records" />
             <FarmerQuickAction
               to="/farmer/notifications"
               icon={Bell}
@@ -291,24 +290,18 @@ export default function FarmerHomePage() {
           </div>
         </section>
 
-        {/* ── Workspace panels (stubs) ─────────────────────────────────────── */}
+        {/* ── Farm profile snapshot ───────────────────────────────────────── */}
         <section>
-          <FarmerSectionHeader title="Your workspace" description="More features coming soon." />
-          <div className="dashboard-activity-grid">
-            <WorkspacePanel
-              title="Crop management"
-              description="Track crop records and their lifecycle across your farms."
-              icon={Wheat}
-              to="/farmer/crops"
-              label="Go to crops"
-            />
-            <WorkspacePanel
-              title="Marketplace"
-              description="Browse and order agricultural inputs from connected suppliers."
-              icon={Package}
-              to="/farmer/marketplace"
-              label="Open marketplace"
-            />
+          <FarmerSectionHeader
+            title="Farm profile"
+            description="A quick snapshot of details linked to your farmer account."
+            action={{ to: '/farmer/farms', label: 'View my farms' }}
+          />
+          <div className="farmer-surface grid gap-4 p-5 sm:grid-cols-2 xl:grid-cols-4">
+            <ProfileDetail label="Registered farms" value={loading ? '…' : String(dashboard?.totalFarms ?? 0)} />
+            <ProfileDetail label="Total farm area" value={loading ? '…' : `${dashboard?.totalFarmsHectares ?? 0} ha`} />
+            <ProfileDetail label="Primary crop" value={loading ? '…' : dashboard?.cropType || 'Not set'} />
+            <ProfileDetail label="District" value={loading ? '…' : dashboard?.district || 'Not set'} />
           </div>
         </section>
 
@@ -319,26 +312,11 @@ export default function FarmerHomePage() {
 
 // ── Local sub-components ─────────────────────────────────────────────────────
 
-function WorkspacePanel({
-  title, description, icon: Icon, to, label,
-}: {
-  title: string; description: string; icon: typeof Wheat; to: string; label: string;
-}) {
+function ProfileDetail({ label, value }: { label: string; value: string }) {
   return (
-    <section className="farmer-surface overflow-hidden">
-      <div className="flex items-start gap-4 border-b border-slate-100 px-6 py-5">
-        <div className="dashboard-panel-icon"><Icon className="h-5 w-5" /></div>
-        <div className="min-w-0 flex-1">
-          <h3 className="farmer-section-title">{title}</h3>
-          <p className="mt-1 text-sm text-slate-500">{description}</p>
-        </div>
-      </div>
-      <div className="px-6 py-5">
-        <p className="text-sm text-slate-400">This section will be connected to live data in a future release.</p>
-        <Link to={to} className="farmer-inline-action mt-3">
-          {label} <ArrowRight className="h-4 w-4" />
-        </Link>
-      </div>
-    </section>
+    <div className="rounded-xl bg-slate-50 px-4 py-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="mt-1 text-base font-bold text-slate-900">{value}</p>
+    </div>
   );
 }

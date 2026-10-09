@@ -1,0 +1,33 @@
+# ==============================================================
+# AGROBUS — AI Soil Analysis Service
+# Python dependencies
+# ==============================================================
+
+# Core ML / Deep Learning
+torch>=2.2.0
+torchvision>=0.17.0
+timm>=0.9.16              # pretrained vision models (EfficientNet, ViT, etc.)
+
+# Data handling & image processing
+numpy>=1.26.0
+Pillow>=10.3.0
+scikit-learn>=1.4.0
+pandas>=2.2.0
+
+# Visualisation & evaluation
+matplotlib>=3.8.0
+seaborn>=0.13.0
+
+# Dataset utilities
+kaggle>=1.6.14            # optional: download datasets via Kaggle CLI
+requests>=2.31.0
+
+# API layer (future Sprint 2)
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+python-multipart>=0.0.9   # file uploads in FastAPI
+
+# Utilities
+tqdm>=4.66.0
+pyyaml>=6.0.1
+python-dotenv>=1.0.1

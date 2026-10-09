@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { dashboardAPI } from '../services/api';
 import {
   Users, FileText, TrendingUp, Package, CheckCircle2, AlertTriangle,
-  Truck, Activity, XCircle, RefreshCw, BarChart3,
+  Truck, Activity, XCircle, RefreshCw, BarChart3, UserCheck, CreditCard,
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -13,7 +14,9 @@ import { StatCard } from '../components/ui/stat-card';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { PageSpinner } from '../components/ui/spinner';
+import { PageHeader } from '../components/ui/page-header';
 import { fmt, fmtDateTime } from '../lib/utils';
+import { useAuth } from '../context/AuthContext';
 
 const PIE_COLORS = ['#f59e0b', '#3b82f6', '#8b5cf6', '#22c55e', '#ef4444'];
 
@@ -29,6 +32,7 @@ function activityIcon(type: string) {
 }
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const [data, setData]     = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]   = useState(false);
@@ -73,6 +77,44 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      <PageHeader
+        title={user?.role === 'AGENT' ? 'Field operations' : 'Platform overview'}
+        description={user?.role === 'AGENT'
+          ? 'Review network activity and jump into farmer, loan, and repayment workflows.'
+          : 'Monitor farmers, lending, repayments, and agricultural input inventory across the platform.'}
+        icon={user?.role === 'AGENT' ? UserCheck : BarChart3}
+      />
+
+      <section aria-label="Quick access" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {(user?.role === 'AGENT'
+          ? [
+              { label: 'Farmers', detail: 'Find and update farmer records', to: '/farmers', icon: Users },
+              { label: 'Loan requests', detail: 'Review applications and decisions', to: '/loans', icon: FileText },
+              { label: 'Repayments', detail: 'Record and review payments', to: '/repayments', icon: CreditCard },
+              { label: 'Inventory', detail: 'Check agricultural input stock', to: '/inputs', icon: Package },
+            ]
+          : [
+              { label: 'Farmers', detail: 'Profiles and portal access', to: '/farmers', icon: Users },
+              { label: 'Loan requests', detail: 'Applications and approvals', to: '/loans', icon: FileText },
+              { label: 'Field agents', detail: 'Coverage and assignments', to: '/agents', icon: UserCheck },
+              { label: 'Inventory', detail: 'Supplies and stock levels', to: '/inputs', icon: Package },
+            ]
+        ).map(({ label, detail, to, icon: Icon }) => (
+          <Link key={to} to={to} className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-green-200 hover:shadow-md">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-50 text-green-700">
+              <Icon className="h-5 w-5" />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-slate-900">{label}</span>
+              <span className="mt-0.5 block text-xs text-slate-500">{detail}</span>
+            </span>
+          </Link>
+        ))}
+      </section>
+
+      <p className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-xs leading-5 text-blue-800">
+        These dashboard figures are platform-wide totals. Operational records can be searched and managed from the sections above.
+      </p>
 
       {/* ── KPI Cards ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">

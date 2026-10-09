@@ -23,11 +23,17 @@ import FarmerLoansPage from './pages/FarmerLoansPage';
 import FarmerRepaymentsPage from './pages/FarmerRepaymentsPage';
 import FarmerNotificationsPage from './pages/FarmerNotificationsPage';
 import FarmerCropsPage from './pages/FarmerCropsPage';
+import FarmerSoilAnalysisPage from './pages/FarmerSoilAnalysisPage';
+import FarmerIntelligencePage from './pages/FarmerIntelligencePage';
+import FarmerActivitiesPage from './pages/FarmerActivitiesPage';
+import FarmerFinancePage from './pages/FarmerFinancePage';
+import FarmerHarvestsPage from './pages/FarmerHarvestsPage';
+import FarmerOrderTrackingPage from './pages/FarmerOrderTrackingPage';
+import FarmerPerformancePage from './pages/FarmerPerformancePage';
 import SuppliersPage from './pages/SuppliersPage';
+import AdminAIIntelligencePage from './pages/AdminAIIntelligencePage';
 import {
-  Activity, BarChart3, BadgeDollarSign, Bell, CircleHelp, ClipboardList, CreditCard,
-  HandCoins, Landmark, Lightbulb, Map, MessageCircleQuestion, Radio, Settings,
-  ShoppingBag, Store, Tractor, Wheat
+  Activity, BadgeDollarSign, Lightbulb, MessageCircleQuestion, Radio, Store, Tractor, Wheat
 } from 'lucide-react';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -50,8 +56,16 @@ function RoleRoute({ roles, children }: { roles: string[]; children: React.React
   return user && roles.includes(user.role) ? <>{children}</> : <Navigate to="/dashboard" replace />;
 }
 
-function FarmerFeature({ title, section, description, icon: Icon }: { title: string; section: string; description: string; icon: typeof Tractor }) {
-  return <RoleRoute roles={['FARMER']}><FarmerFeaturePage title={title} section={section} description={description} icon={Icon} /></RoleRoute>;
+function FarmerFeature({ title, section, description, icon: Icon, nextPath, nextLabel }: {
+  title: string;
+  section: string;
+  description: string;
+  icon: typeof Tractor;
+  nextPath?: string;
+  nextLabel?: string;
+  nextState?: Record<string, unknown>;
+}) {
+  return <RoleRoute roles={['FARMER']}><FarmerFeaturePage title={title} section={section} description={description} icon={Icon} nextPath={nextPath} nextLabel={nextLabel} nextState={nextState} /></RoleRoute>;
 }
 
 export default function App() {
@@ -82,29 +96,32 @@ export default function App() {
             <Route path="notifications" element={<RoleRoute roles={['ADMIN', 'AGENT']}><NotificationsPage /></RoleRoute>} />
             <Route path="suppliers"     element={<RoleRoute roles={['ADMIN', 'AGENT']}><SuppliersPage /></RoleRoute>} />
             <Route path="ussd"          element={<RoleRoute roles={['ADMIN', 'AGENT']}><USSDPage /></RoleRoute>} />
+            <Route path="ai-intelligence" element={<RoleRoute roles={['ADMIN', 'AGENT']}><AdminAIIntelligencePage /></RoleRoute>} />
 
             <Route path="farmer/farms" element={<RoleRoute roles={['FARMER']}><FarmerFarmsPage /></RoleRoute>} />
             <Route path="farmer/loans" element={<RoleRoute roles={['FARMER']}><FarmerLoansPage /></RoleRoute>} />
             <Route path="farmer/repayments" element={<RoleRoute roles={['FARMER']}><FarmerRepaymentsPage /></RoleRoute>} />
             <Route path="farmer/notifications" element={<RoleRoute roles={['FARMER']}><FarmerNotificationsPage /></RoleRoute>} />
             <Route path="farmer/crops" element={<RoleRoute roles={['FARMER']}><FarmerCropsPage /></RoleRoute>} />
-            <Route path="farmer/activities" element={<FarmerFeature title="Farm Activities" section="My Farm" description="Keep a record of work completed on your farms." icon={ClipboardList} />} />
+            <Route path="farmer/crop-planning" element={<RoleRoute roles={['FARMER']}><FarmerCropsPage initialStatus="PLANNED" /></RoleRoute>} />
+            <Route path="farmer/harvests" element={<RoleRoute roles={['FARMER']}><FarmerHarvestsPage /></RoleRoute>} />
+            <Route path="farmer/activities" element={<RoleRoute roles={['FARMER']}><FarmerActivitiesPage /></RoleRoute>} />
             <Route path="farmer/monitoring" element={<FarmerFeature title="Farm Monitoring" section="My Farm" description="Review connected farm monitoring data when devices and services are available." icon={Activity} />} />
-            <Route path="farmer/marketplace" element={<FarmerFeature title="Buy Agricultural Inputs" section="Marketplace" description="Browse agricultural inputs from connected suppliers and place orders when the marketplace service is available." icon={Store} />} />
-            <Route path="farmer/orders" element={<FarmerFeature title="My Orders" section="Marketplace" description="Track input orders belonging to your authenticated farmer account." icon={ShoppingBag} />} />
+            <Route path="farmer/marketplace" element={<FarmerFeature title="Input Marketplace" section="Input procurement" description="A supplier catalogue and checkout service is not connected. Farmers can still request input credit and follow the review process." icon={Store} nextPath="/farmer/loans" nextLabel="Request input credit" nextState={{ openForm: true }} />} />
+            <Route path="farmer/orders" element={<RoleRoute roles={['FARMER']}><FarmerOrderTrackingPage /></RoleRoute>} />
             <Route path="farmer/produce" element={<FarmerFeature title="Sell Produce" section="Marketplace" description="Register and publish your harvested produce when the produce service is connected." icon={Wheat} />} />
             <Route path="farmer/sales" element={<FarmerFeature title="My Sales" section="Marketplace" description="Review your completed produce sales from real marketplace records." icon={BadgeDollarSign} />} />
-            <Route path="farmer/crop-planning" element={<FarmerFeature title="Crop Planning" section="Farm Management" description="Plan your next crop cycle using records linked to your farms." icon={Map} />} />
-            <Route path="farmer/harvests" element={<FarmerFeature title="Harvests" section="Farm Management" description="Record and review harvests connected to your crop records." icon={Wheat} />} />
-            <Route path="farmer/performance" element={<FarmerFeature title="Farm Performance" section="Farm Management" description="View production, expense, and revenue measures calculated from your real farm records." icon={BarChart3} />} />
+            <Route path="farmer/performance" element={<RoleRoute roles={['FARMER']}><FarmerPerformancePage /></RoleRoute>} />
             <Route path="farmer/ask-expert" element={<FarmerFeature title="Ask an Expert" section="Agricultural Support" description="Submit crop and farming questions when the advisory service is connected." icon={MessageCircleQuestion} />} />
             <Route path="farmer/advice" element={<FarmerFeature title="Agricultural Advice" section="Agricultural Support" description="Read responses and advice addressed to your authenticated farmer account." icon={Lightbulb} />} />
-            <Route path="farmer/crop-recommendations" element={<FarmerAIAdvisorPage />} />
-            <Route path="farmer/finance" element={<FarmerFeature title="Financial Summary" section="Finance" description="See a summary calculated from your own loans, repayments, and sales." icon={CreditCard} />} />
+            <Route path="farmer/soil-analysis" element={<RoleRoute roles={['FARMER']}><FarmerSoilAnalysisPage /></RoleRoute>} />
+            <Route path="farmer/intelligence" element={<RoleRoute roles={['FARMER']}><FarmerIntelligencePage /></RoleRoute>} />
+            <Route path="farmer/crop-recommendations" element={<RoleRoute roles={['FARMER']}><FarmerAIAdvisorPage /></RoleRoute>} />
+            <Route path="farmer/finance" element={<RoleRoute roles={['FARMER']}><FarmerFinancePage /></RoleRoute>} />
             <Route path="farmer/ussd" element={<FarmerFeature title="USSD Services" section="Services" description="USSD access is planned around *810#. This page does not simulate a real transaction." icon={Radio} />} />
             <Route path="farmer/iot" element={<FarmerFeature title="Smart Farm / IoT" section="Services" description="Connect farm devices here when the Smart Farm monitoring service becomes available." icon={Radio} />} />
             <Route path="farmer/profile" element={<RoleRoute roles={['FARMER']}><FarmerProfilePage /></RoleRoute>} />
-            <Route path="farmer/settings" element={<FarmerFeature title="Settings" section="Account" description="Account settings will become available as profile-management APIs are introduced." icon={Settings} />} />
+            <Route path="farmer/settings" element={<RoleRoute roles={['FARMER']}><Navigate to="/farmer/profile" replace /></RoleRoute>} />
           </Route>
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

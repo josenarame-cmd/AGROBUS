@@ -205,7 +205,6 @@ export default function FarmerLoansPage() {
             icon={Landmark}
             title={statusFilter ? `No ${STATUS_CONFIG[statusFilter]?.label.toLowerCase()} loans` : 'No loans yet'}
             description="Submit a loan request to get started with agricultural input credit."
-            action={!statusFilter ? { label: 'Request your first loan', to: '' } : undefined}
           />
         ) : (
           <div className="overflow-x-auto">
@@ -277,7 +276,7 @@ export default function FarmerLoansPage() {
                 {/* Info banner */}
                 <div className="flex gap-3 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
                   <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                  <p>Once submitted, the admin will be notified immediately and will review your request within 2-3 business days.</p>
+                  <p>The admin team will review your request and update its status here.</p>
                 </div>
 
                 {/* Crop Type */}

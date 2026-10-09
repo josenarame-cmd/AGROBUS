@@ -94,7 +94,7 @@ const EMPTY_FORM = {
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function FarmerCropsPage() {
+export default function FarmerCropsPage({ initialStatus = 'ALL' }: { initialStatus?: CropStatus | 'ALL' } = {}) {
   const [crops, setCrops]       = useState<Crop[]>([]);
   const [farms, setFarms]       = useState<Farm[]>([]);
   const [loading, setLoading]   = useState(true);
@@ -108,7 +108,7 @@ export default function FarmerCropsPage() {
 
   // Filter / search
   const [searchQuery, setSearchQuery]     = useState('');
-  const [statusFilter, setStatusFilter]   = useState<CropStatus | 'ALL'>('ALL');
+  const [statusFilter, setStatusFilter]   = useState<CropStatus | 'ALL'>(initialStatus);
   const [farmFilter, setFarmFilter]       = useState<string>('ALL');
 
   // ── Load ──────────────────────────────────────────────────────────────────
@@ -238,8 +238,10 @@ export default function FarmerCropsPage() {
     <section className="farmer-content animate-fade-in">
       <FarmerPageHeader
         eyebrow="My Farm"
-        title="Crop Management"
-        description="Track every crop through its full lifecycle — from planning to harvest and sale."
+        title={initialStatus === 'PLANNED' ? 'Crop planning' : 'Crop Management'}
+        description={initialStatus === 'PLANNED'
+          ? 'Plan crop cycles on your farms and update their recorded lifecycle as field work progresses.'
+          : 'Track every crop through its full lifecycle — from planning to harvest and sale.'}
         icon={Wheat}
       />
 

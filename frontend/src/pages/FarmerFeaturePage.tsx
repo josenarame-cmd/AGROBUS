@@ -6,9 +6,10 @@ interface FarmerFeaturePageProps {
   section: string;
   description: string;
   icon: LucideIcon;
-  connected?: boolean;
   nextPath?: string;
   nextLabel?: string;
+  nextState?: Record<string, unknown>;
+  connected?: boolean;
   emptyTitle?: string;
   emptyDescription?: string;
 }
@@ -18,15 +19,16 @@ export default function FarmerFeaturePage({
   section,
   description,
   icon: Icon,
-  connected = false,
   nextPath,
   nextLabel,
+  nextState,
+  connected = false,
   emptyTitle = 'Nothing to show yet',
   emptyDescription = 'Your records will appear here once this service is connected to your farmer account.',
 }: FarmerFeaturePageProps) {
   return (
     <section className="farmer-content animate-fade-in">
-      <FarmerPageHeader eyebrow={section} title={title} description={description} icon={Icon} action={nextPath && nextLabel ? { to: nextPath, label: nextLabel } : undefined} />
+      <FarmerPageHeader eyebrow={section} title={title} description={description} icon={Icon} action={nextPath && nextLabel ? { to: nextPath, label: nextLabel, state: nextState } : undefined} />
       <div className="space-y-6">
         <FarmerServiceState connected={connected} />
         <section className="farmer-surface overflow-hidden">

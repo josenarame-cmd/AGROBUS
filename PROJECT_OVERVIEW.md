@@ -348,3 +348,300 @@ Existing AgroBus input/credit workflow
 The current hackathon model is intentionally **explainable and deterministic**. It scores candidate crops against soil type, pH, moisture, temperature and expected rainfall. It is designed as a prototype inference layer that can later be replaced or augmented with a trained ML model and live IoT/weather data.
 
 The UI explicitly identifies the output as a prototype recommendation and advises validation with local agronomy/extension guidance before field use.
+
+---
+
+## AI Soil Analysis Module
+
+> **Status:** Sprint 1 — Foundation & Prototype (standalone Python service)
+> **Location:** `ai-service/` (independent of Spring Boot and React)
+
+### 1. Motivation
+
+Smallholder farmers in Rwanda and across East Africa often lack affordable
+access to timely soil testing. Laboratory soil analysis can cost USD 30–100
+per sample, take days to weeks, and requires transport to urban centres.
+As a result, farmers make crop selection and fertiliser decisions based on
+experience and traditional knowledge alone, leading to sub-optimal yields
+and input waste.
+
+AGROBUS aims to address this gap by providing an AI-assisted soil screening
+tool that a farmer or field agent can use in the field with only a smartphone
+camera — bringing preliminary soil type information to the point of need.
+
+### 2. Problem Being Addressed
+
+- No access to affordable soil testing in rural Rwanda.
+- Crop choices are made without knowledge of soil type or condition.
+- AGROBUS already handles input credit loans — connecting soil information
+  to input recommendations will improve loan precision and repayment rates.
+
+### 3. Proposed AI Solution
+
+A computer vision model (EfficientNet-B0, fine-tuned via transfer learning)
+classifies a photograph of a soil sample into a soil type category.
+The output is an AI-assisted estimate with a confidence score, not a
+laboratory measurement.
+
+The intended workflow:
+
+```
+Soil Photo (smartphone)
+      ↓
+AI Soil Classification
+      ↓
+Soil Type Estimate + Confidence Score
+      ↓
+If confidence < 75%: Flag for Agronomist Review
+      ↓
+Validated Soil Type → (Future) Crop & Input Suggestion
+```
+
+### 4. Why AI Instead of Continuous IoT Sensing
+
+| Approach | IoT Sensors | AI Vision |
+|---|---|---|
+| Cost per farmer | USD 200–500+ per device | Smartphone (already owned) |
+| Connectivity needed | AlwayAS-on (GPRS/3G) | One-time image upload |
+| Maintenance | Hardware failure, battery, theft | App update only |
+| Scalability | Limited by device cost | Scales to all farmers instantly |
+| Data richness | Chemical reading (accurate) | Visual screening (indicative) |
+
+AI vision is not a replacement for soil sensors or laboratory testing.
+It is a lower-cost, first-pass screening layer that makes soil-awareness
+accessible to farmers who currently have no information at all.
+
+### 5. Current Prototype Scope
+
+Sprint 1 delivers:
+- Dataset identification and documentation
+- Python environment configuration
+- Dataset preparation script (train/val/test split)
+- Model training script (EfficientNet-B0, transfer learning)
+- Evaluation script (accuracy, precision/recall/F1, confusion matrix, ROC)
+- Prediction script for a single soil image
+- Stub FastAPI endpoint (Sprint 2 integration point)
+
+**Not in scope for Sprint 1:**
+- pH, NPK, moisture, or any chemical property estimation
+- Crop recommendations
+- Fertiliser recommendations
+- AGROBUS frontend or backend integration
+- Rwanda-specific dataset
+
+### 6. Dataset Source
+
+| Field | Value |
+|---|---|
+| Name | Soil Image Dataset |
+| Provider | Jayaprakash Pondy |
+| Platform | Kaggle |
+| URL | https://www.kaggle.com/datasets/jayaprakashpondy/soil-image-dataset |
+
+### 7. Dataset License
+
+**CDLA-Permissive-1.0** (Community Data License Agreement — Permissive)
+
+- ✅ Academic and research use — permitted
+- ✅ Prototype and commercial use — permitted
+- ✅ Model derivation — permitted
+- ⚠ Attribution required — cite the dataset in publications and documentation
+- ⚠ Not sourced from Rwandan soils — validation with local samples is required
+
+### 8. AI Architecture
+
+```
+Input: RGB soil photograph (any resolution)
+      ↓
+Resize + RandomCrop(224×224) + Normalise (ImageNet μ/σ)
+      ↓
+EfficientNet-B0 Feature Extractor (pretrained on ImageNet)
+      ↓
+Dropout(0.3) → Linear(1280 → 4)
+      ↓
+Softmax → class probabilities [0, 1]
+      ↓
+argmax → predicted soil type
+      ↓
+confidence = max(probabilities) × 100 %
+```
+
+### 9. Model Selected
+
+**EfficientNet-B0** (via `timm` library, ImageNet pre-trained)
+
+| Property | Value |
+|---|---|
+| Parameters | ~5.3 M total |
+| Input size | 224 × 224 RGB |
+| Output | 4-class softmax |
+| Pre-training | ImageNet-1K |
+| Top-1 ImageNet | 77.1 % |
+| Training hardware | CPU or CUDA GPU |
+
+Rationale: strong accuracy-to-size ratio; fits on a laptop GPU or CPU;
+scales to B3/B5 if accuracy needs to improve later.
+
+### 10. Training Methodology
+
+Two-phase transfer learning strategy:
+
+**Phase 1 (epochs 1–5, configurable):**
+- Backbone weights frozen (ImageNet features preserved)
+- Only the new classifier head is trained
+- Learning rate: 1×10⁻⁴
+
+**Phase 2 (remaining epochs):**
+- All layers unfrozen
+- End-to-end fine-tuning with lower LR (1×10⁻⁵)
+- CosineAnnealingLR scheduler
+
+Additional techniques:
+- Data augmentation: random crop, flip, colour jitter, rotation
+- Label smoothing (0.1) reduces overconfidence
+- AdamW optimiser with weight decay
+- Early stopping (patience=5) prevents overfitting
+
+Split: 70 % train / 15 % validation / 15 % test (stratified).
+
+### 11. Evaluation Results
+
+Evaluation metrics are generated by running `python evaluation/evaluate.py`
+after training. Results will be appended here after the first training run.
+
+Metrics reported:
+- Test accuracy (%)
+- Precision / Recall / F1 per class
+- Macro and weighted averages
+- Confusion matrix (PNG)
+- ROC-AUC per class (one-vs-rest)
+- Training and validation loss/accuracy curves (PNG)
+
+> ⚠ Placeholder — will be filled after first training run on the dataset.
+
+### 12. Limitations
+
+1. **Not a laboratory replacement.** Cannot measure pH, NPK, CEC, moisture,
+   or any chemical soil property from visual information alone.
+2. **No Rwanda-specific training data** in Sprint 1. Accuracy on local soil
+   samples is unknown and may differ significantly from reported test metrics.
+3. **Small dataset.** ~600–1 200 images is sufficient for a prototype but
+   limited for production reliability.
+4. **Visual classification only.** Performance depends on image quality,
+   lighting, and whether raw soil (not planted surface) is photographed.
+5. **4 generic soil classes.** Real AGROBUS deployment will need Rwanda-specific
+   soil taxonomy and labelled local images.
+
+### 13. AI Soil Analysis — Human Review Workflow
+
+The system enforces a **confidence-gated review workflow**:
+
+```text
+Soil Image
+    ↓
+EfficientNet-B0
+    ↓
+Soil Classification
+    ↓
+Confidence Score
+    ↓
+Confidence Assessment
+    ↓
+ ┌───────────────────────┐
+ │                       │
+ HIGH                  MEDIUM/LOW
+ │                       │
+ ↓                       ↓
+AI-assisted result    Human Review
+                         ↓
+                   Agronomist
+                         ↓
+                 Approved/Corrected
+```
+
+Human feedback (corrections/approvals) can later become valuable training and validation data.
+
+#### Future Architecture (Not yet implemented)
+```text
+Farmer
+  ↓
+Upload Soil Image
+  ↓
+AI Soil Classification
+  ↓
+Confidence Assessment
+  ↓
+High Confidence
+  → AI-assisted result
+
+Low/Medium Confidence
+  → Agronomist Review
+
+Agronomist Result
+  ↓
+Validated Soil Classification
+  ↓
+Future Model Improvement
+```
+*Note: In future sprints (Sprints 2+), the AI service will integrate with the Spring Boot Backend which powers the AGROBUS React Frontend.*
+
+### 14. Future Integration with AGROBUS
+
+Planned integration path:
+
+1. **Sprint 2**: FastAPI endpoint (`api/serve.py`) is tested and exposed
+   internally. Spring Boot `SoilAnalysisService` added to call it.
+2. **Sprint 3**: Farmer dashboard gains "Soil Analysis" page.
+   Farmers submit photo + metadata (location, season, farm size).
+3. **Sprint 4**: Validated soil type linked to AGROBUS input catalogue.
+   Field agents receive soil-aware input recommendations.
+4. **Sprint 5**: Crop recommendations driven by validated soil + season data.
+5. **Sprint 6**: Loan requests can be pre-populated with AI-derived crop and
+   input suggestions, improving loan accuracy and repayment prediction.
+
+### 15. Future Rwanda-Specific Dataset Strategy
+
+To improve accuracy for AGROBUS's target geography:
+
+1. **Field data collection**: Partner with Rwanda Agriculture Board (RAB) and
+   local agronomists to photograph and label soil samples from Rwandan farms.
+2. **Paired data**: Collect soil images alongside laboratory measurements
+   (pH, NPK) for future regression model development.
+3. **Transfer to local model**: Fine-tune on Rwanda-specific data once
+   collected. Existing EfficientNet-B0 checkpoint serves as starting point.
+4. **Continuou improvement**: As the AGROBUS platform scales, farmer-uploaded
+   images with agronomist-verified labels create a growing local dataset.
+5. **Research partners**: Collaborate with UR-CAVM (University of Rwanda,
+   College of Agriculture, Animal Sciences and Veterinary Medicine) for
+   scientifically validated ground-truth labels.
+
+### Running the AI Service
+
+```bash
+cd ai-service
+
+# 1. Create and activate virtual environment
+python -m venv .venv
+.venv\Scripts\activate          # Windows
+# source .venv/bin/activate     # macOS/Linux
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Smoke test (no dataset needed)
+python test_smoke.py
+
+# 4. Download dataset (see ai-service/README.md for options)
+
+# 5. Prepare dataset
+python dataset/prepare_dataset.py
+
+# 6. Train
+python training/train.py
+
+# 7. Evaluate
+python evaluation/evaluate.py
+
+# 8. Predict a soil image
+python prediction/predict.py path/to/soil_image.jpg
+```

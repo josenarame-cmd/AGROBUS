@@ -59,12 +59,15 @@ export function DataTable<TData, TValue>({
                   {headerGroup.headers.map(header => (
                     <th
                       key={header.id}
+                      scope="col"
+                      aria-sort={header.column.getIsSorted() === 'asc' ? 'ascending' : header.column.getIsSorted() === 'desc' ? 'descending' : 'none'}
                       className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                       style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
                     >
                       {header.isPlaceholder ? null : (
                         header.column.getCanSort() ? (
                           <button
+                            type="button"
                             className="flex items-center gap-1 hover:text-foreground transition-colors"
                             onClick={header.column.getToggleSortingHandler()}
                           >
@@ -89,13 +92,13 @@ export function DataTable<TData, TValue>({
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
                       </svg>
-                      <span className="text-sm">Loading…</span>
+                      <span role="status" className="text-sm">Loading…</span>
                     </div>
                   </td>
                 </tr>
               ) : table.getRowModel().rows.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length} className="py-16 text-center text-sm text-muted-foreground">
+                  <td colSpan={columns.length} role="status" className="py-16 text-center text-sm text-muted-foreground">
                     {emptyMessage}
                   </td>
                 </tr>
@@ -127,7 +130,7 @@ export function DataTable<TData, TValue>({
             {' '}— <span className="font-semibold text-foreground">{table.getFilteredRowModel().rows.length}</span> rows
           </p>
           <div className="flex items-center gap-1.5">
-            <Button variant="outline" size="icon" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
+            <Button type="button" variant="outline" size="icon" aria-label="Previous page" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
             {Array.from({ length: Math.min(5, table.getPageCount()) }, (_, i) => {
@@ -141,14 +144,17 @@ export function DataTable<TData, TValue>({
                   key={p}
                   variant={p === pageIdx ? 'default' : 'outline'}
                   size="icon"
-                  className="h-8 w-8 text-xs"
+                  className="h-10 w-10 text-xs"
+                  type="button"
+                  aria-label={`Go to page ${p + 1}`}
+                  aria-current={p === pageIdx ? 'page' : undefined}
                   onClick={() => table.setPageIndex(p)}
                 >
                   {p + 1}
                 </Button>
               );
             })}
-            <Button variant="outline" size="icon" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+            <Button type="button" variant="outline" size="icon" aria-label="Next page" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

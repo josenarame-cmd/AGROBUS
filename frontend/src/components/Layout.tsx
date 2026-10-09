@@ -21,6 +21,7 @@ const adminNav = [
     { path: '/suppliers',     label: 'Suppliers',      icon: Building2 },
     { path: '/repayments',    label: 'Repayments',     icon: CreditCard },
     { path: '/notifications', label: 'Notifications',  icon: Bell },
+    { path: '/ai-intelligence', label: 'AI Platform',  icon: BrainCircuit },
     { path: '/ussd',          label: 'USSD Simulator', icon: Smartphone },
   ]},
 ];
@@ -34,6 +35,7 @@ const agentNav = [
     { path: '/suppliers',     label: 'Suppliers',     icon: Building2 },
     { path: '/repayments',    label: 'Repayments',    icon: CreditCard },
     { path: '/notifications', label: 'Notifications', icon: Bell },
+    { path: '/ai-intelligence', label: 'AI Platform', icon: BrainCircuit },
   ]},
 ];
 
@@ -42,29 +44,34 @@ const farmerNav = [
   { label: 'My Farm', items: [
     { path: '/farmer/farms',       label: 'My Farms',       icon: Tractor },
     { path: '/farmer/crops',       label: 'Crops',          icon: Wheat },
+    { path: '/farmer/crop-planning', label: 'Crop planning', icon: Map },
+    { path: '/farmer/harvests',    label: 'Harvest records', icon: Wheat },
+    { path: '/farmer/performance', label: 'Farm performance', icon: BarChart3 },
     { path: '/farmer/activities',  label: 'Activities',     icon: ClipboardList },
-    { path: '/farmer/monitoring',  label: 'Monitoring',     icon: Activity },
+    { path: '/farmer/monitoring',  label: 'Monitoring (planned)', icon: Activity },
   ]},
-  { label: 'Marketplace', items: [
-    { path: '/farmer/marketplace', label: 'Buy Inputs',    icon: Store },
-    { path: '/farmer/orders',      label: 'My Orders',     icon: ShoppingBag },
+  { label: 'Input procurement', items: [
+    { path: '/farmer/marketplace', label: 'Input marketplace', icon: Store },
+    { path: '/farmer/orders',      label: 'Request tracking',   icon: ShoppingBag },
     { path: '/farmer/produce',     label: 'Sell Produce',  icon: Wheat },
     { path: '/farmer/sales',       label: 'My Sales',      icon: BadgeDollarSign },
   ]},
   { label: 'Finance', items: [
     { path: '/farmer/loans',       label: 'My Loans',        icon: Landmark },
     { path: '/farmer/repayments',  label: 'Repayments',      icon: HandCoins },
-    { path: '/farmer/finance',     label: 'Summary',         icon: CreditCard },
+    { path: '/farmer/finance',     label: 'Financial overview', icon: CreditCard },
   ]},
   { label: 'Support', items: [
-    { path: '/farmer/ask-expert',          label: 'Ask Expert',    icon: MessageCircleQuestion },
-    { path: '/farmer/advice',              label: 'Advice',        icon: Lightbulb },
-    { path: '/farmer/crop-recommendations',label: 'AI Farm Advisor', icon: BrainCircuit },
+    { path: '/farmer/ask-expert',          label: 'Ask Expert (planned)', icon: MessageCircleQuestion },
+    { path: '/farmer/advice',              label: 'Advice (planned)',     icon: Lightbulb },
+    { path: '/farmer/soil-analysis',       label: 'Soil Analysis', icon: Map },
+    { path: '/farmer/intelligence',        label: 'Intelligence',  icon: BrainCircuit },
+    { path: '/farmer/crop-recommendations',label: 'Legacy Advisor',icon: BrainCircuit },
   ]},
   { label: 'Services', items: [
     { path: '/farmer/notifications', label: 'Notifications', icon: Bell },
-    { path: '/farmer/ussd',          label: 'USSD',          icon: Smartphone },
-    { path: '/farmer/iot',           label: 'Smart Farm',    icon: Radio },
+    { path: '/farmer/ussd',          label: 'USSD (planned)', icon: Smartphone },
+    { path: '/farmer/iot',           label: 'Smart Farm (planned)', icon: Radio },
   ]},
   { label: 'Account', items: [
     { path: '/farmer/profile',   label: 'My Profile', icon: UserRound },
@@ -78,9 +85,14 @@ function NavGroup({ label, items, collapsed, onToggle, dark }: {
   label: string; items: typeof adminNav[0]['items'];
   collapsed: boolean; onToggle: () => void; dark: boolean;
 }) {
+  const contentId = `nav-group-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+
   return (
     <div className="mb-1">
       <button
+        type="button"
+        aria-expanded={!collapsed}
+        aria-controls={contentId}
         onClick={onToggle}
         className={cn(
           'flex w-full items-center justify-between px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors',
@@ -90,24 +102,23 @@ function NavGroup({ label, items, collapsed, onToggle, dark }: {
         {label}
         <ChevronRight className={cn('h-3 w-3 transition-transform', !collapsed && 'rotate-90')} />
       </button>
-      {!collapsed && (
-        <div className="mt-0.5 space-y-0.5">
-          {items.map(item => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => cn(
-                'sidebar-link group',
-                isActive && 'active',
-                dark && !isActive && '!text-slate-400 hover:!bg-slate-800 hover:!text-green-400'
-              )}
-            >
-              <item.icon className="h-4 w-4 shrink-0" />
-              <span>{item.label}</span>
-            </NavLink>
-          ))}
-        </div>
-      )}
+      <div id={contentId} className={cn('mt-0.5 space-y-0.5', collapsed && 'hidden')}>
+        {items.map(item => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            end
+            className={({ isActive }) => cn(
+              'sidebar-link group',
+              isActive && 'active',
+              dark && !isActive && '!text-slate-400 hover:!bg-slate-800 hover:!text-green-400'
+            )}
+          >
+            <item.icon className="h-4 w-4 shrink-0" />
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
+      </div>
     </div>
   );
 }
@@ -119,7 +130,10 @@ export default function Layout() {
   const location  = useLocation();
   const navigate  = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [dark, setDark]               = useState(false);
+  const [dark, setDark]               = useState(() => {
+    const saved = localStorage.getItem('agb-theme');
+    return saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
   const [profileOpen, setProfile]     = useState(false);
   const [collapsed, setCollapsed]     = useState<Record<string, boolean>>({});
   const profileRef = useRef<HTMLDivElement>(null);
@@ -128,8 +142,9 @@ export default function Layout() {
     : user?.role === 'AGENT' ? agentNav : adminNav;
 
   useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
     document.body.classList.toggle('dark-mode', dark);
-    return () => document.body.classList.remove('dark-mode');
+    localStorage.setItem('agb-theme', dark ? 'dark' : 'light');
   }, [dark]);
 
   // close profile dropdown on outside click
@@ -155,18 +170,23 @@ export default function Layout() {
 
   return (
     <div className={cn('flex min-h-screen', dark ? 'bg-slate-950' : 'bg-slate-50')}>
+      <a href="#app-content" className="skip-link">Skip to content</a>
 
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
-          onClick={() => setSidebarOpen(false)} />
+        <button
+          type="button"
+          aria-label="Close navigation"
+          className="fixed inset-0 z-40 cursor-default bg-black/50 backdrop-blur-sm lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
 
       {/* ── Sidebar ──────────────────────────────────────────────────────── */}
       <aside className={cn(
         'fixed inset-y-0 left-0 z-50 flex w-72 flex-col transition-transform duration-300 ease-in-out lg:static lg:translate-x-0',
         sidebarOpen ? 'translate-x-0' : '-translate-x-full',
-        dark ? 'bg-surface-900/95 backdrop-blur-xl border-r border-surface-800' : 'bg-surface-50/90 backdrop-blur-xl border-r border-surface-200 shadow-[4px_0_24px_rgba(0,0,0,0.02)]'
+        dark ? 'bg-surface-900/95 backdrop-blur-xl border-r border-surface-800' : 'bg-white/95 backdrop-blur-xl border-r border-surface-200 shadow-[4px_0_24px_rgba(0,0,0,0.02)]'
       )}>
 
         {/* Logo */}
@@ -182,13 +202,13 @@ export default function Layout() {
               Agri Credit Platform
             </p>
           </div>
-          <button className="ml-auto rounded-lg p-2 lg:hidden hover:bg-surface-200 dark:hover:bg-surface-800 transition-colors" onClick={() => setSidebarOpen(false)}>
+          <button type="button" aria-label="Close navigation" className="ml-auto rounded-lg p-2 lg:hidden hover:bg-surface-200 dark:hover:bg-surface-800 transition-colors" onClick={() => setSidebarOpen(false)}>
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <nav id="navigation-sidebar" aria-label="Main navigation" className="flex-1 overflow-y-auto px-3 py-4">
           {navGroups.map(group => (
             <NavGroup
               key={group.label}
@@ -222,11 +242,11 @@ export default function Layout() {
 
         {/* Top bar */}
         <header className={cn(
-          'sticky top-0 z-30 flex h-20 shrink-0 items-center justify-between border-b px-6 backdrop-blur-2xl transition-colors',
+        'sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b px-4 backdrop-blur-2xl transition-colors sm:h-20 sm:px-6',
           dark ? 'border-surface-800 bg-surface-900/70' : 'border-surface-200 bg-white/70 shadow-[0_4px_32px_rgba(0,0,0,0.02)]'
         )}>
           <div className="flex items-center gap-4">
-            <button className={cn('rounded-xl p-2.5 transition-colors lg:hidden', dark ? 'hover:bg-surface-800 text-surface-200' : 'hover:bg-surface-100 text-surface-700')} onClick={() => setSidebarOpen(true)}>
+            <button type="button" aria-label="Open navigation" aria-expanded={sidebarOpen} aria-controls="navigation-sidebar" className={cn('rounded-md p-2.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 lg:hidden', dark ? 'bg-surface-800 text-surface-200 hover:bg-surface-700' : 'bg-[#4dbbc2] text-white hover:bg-[#3aa8b0]')} onClick={() => setSidebarOpen(true)}>
               <Menu className="h-5 w-5" />
             </button>
             <div>
@@ -241,23 +261,24 @@ export default function Layout() {
 
           <div className="flex items-center gap-2.5">
             {/* Dark mode */}
-            <button onClick={() => setDark(d => !d)}
+            <button type="button" aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'} onClick={() => setDark(d => !d)}
               className={cn('rounded-xl p-2.5 transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary-500', dark ? 'bg-surface-800 text-yellow-400 hover:bg-surface-700 hover:scale-105' : 'bg-surface-100 text-surface-600 hover:bg-surface-200 hover:scale-105')}>
               {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
 
             {/* Notifications */}
             <button
+              type="button"
+              aria-label={user?.role === 'FARMER' ? 'Open farmer notifications' : 'Open notifications'}
+              title="Notifications"
               onClick={() => navigate(user?.role === 'FARMER' ? '/farmer/notifications' : '/notifications')}
               className={cn('relative rounded-xl p-2.5 transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary-500', dark ? 'bg-surface-800 text-surface-300 hover:bg-surface-700 hover:scale-105' : 'bg-surface-100 text-surface-600 hover:bg-surface-200 hover:scale-105')}>
               <Bell className="h-4 w-4" />
-              {/* notification dot */}
-              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-green-500" />
             </button>
 
             {/* Profile */}
             <div ref={profileRef} className="relative ml-2 border-l border-surface-200 dark:border-surface-800 pl-3">
-              <button onClick={() => setProfile(p => !p)}
+              <button type="button" aria-label={profileOpen ? 'Close account menu' : 'Open account menu'} aria-expanded={profileOpen} aria-controls="account-menu" onClick={() => setProfile(p => !p)}
                 className={cn('flex items-center gap-2.5 rounded-2xl px-2.5 py-1.5 transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary-500 border border-transparent', dark ? 'hover:bg-surface-800 hover:border-surface-700' : 'hover:bg-white hover:border-surface-200 hover:shadow-sm')}>
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 text-xs font-bold text-white shadow-inner">
                   {initials}
@@ -266,7 +287,7 @@ export default function Layout() {
               </button>
 
               {profileOpen && (
-                <div className={cn(
+                <div id="account-menu" className={cn(
                   'absolute right-0 top-full mt-3 w-64 overflow-hidden rounded-2xl border shadow-2xl animate-in fade-in slide-in-from-top-2 z-50',
                   dark ? 'border-surface-700 bg-surface-800/95 backdrop-blur-xl' : 'border-surface-200 bg-white/95 backdrop-blur-xl'
                 )}>
@@ -295,7 +316,7 @@ export default function Layout() {
                     </Link>
                   )}
 
-                  <button onClick={handleLogout}
+                  <button type="button" onClick={handleLogout}
                     className={cn('flex w-full items-center gap-3 px-5 py-3 text-sm font-semibold text-red-500 transition-colors', dark ? 'hover:bg-red-500/10 hover:text-red-400' : 'hover:bg-red-50')}>
                     <LogOut className="h-4 w-4" /> Sign out
                   </button>
@@ -306,7 +327,7 @@ export default function Layout() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto p-6 lg:p-8">
+        <main id="app-content" tabIndex={-1} className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>

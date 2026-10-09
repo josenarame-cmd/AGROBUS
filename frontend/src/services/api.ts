@@ -81,6 +81,12 @@ export const farmerSelfAPI = {
   markNotificationRead: (id: number) => api.put(`/farmer/notifications/${id}/read`),
 };
 
+export const farmActivityAPI = {
+  getForCrop: (cropId: number) => api.get(`/farmer/activities/crop/${cropId}`),
+  create: (data: unknown) => api.post('/farmer/activities', data),
+  delete: (id: number) => api.delete(`/farmer/activities/${id}`)
+};
+
 // ── Loans (ADMIN / AGENT) ───────────────────────────────────────────────────
 export const loanAPI = {
   getAll:      (params?: Record<string, unknown>) => api.get('/loans', { params }),
@@ -162,4 +168,26 @@ export default api;
 // ── Farmer AI Advisor ───────────────────────────────────────────────────────
 export const farmerAIAPI = {
   recommend: (data: unknown) => api.post('/farmer/ai/recommend', data),
+};
+
+export const farmerSoilAnalysisAPI = {
+  analyze: (data: FormData) => api.post('/farmer/soil-analysis', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  getHistory: () => api.get('/farmer/soil-analysis')
+};
+
+// ── Farmer Intelligence (premium AI workspace) ───────────────────────────────
+export const farmerIntelligenceAPI = {
+  /** Legacy endpoint — kept for backward compat */
+  getFarmIntelligence: (farmId: number) =>
+    api.get(`/farmer/intelligence/farm/${farmId}`),
+  /** New: rich farm intelligence summary */
+  getFarmSummary: (farmId: number) =>
+    api.get(`/farmer/intelligence/farms/${farmId}/summary`),
+};
+
+// ── Admin Intelligence ───────────────────────────────────────────────────────
+export const adminIntelligenceAPI = {
+  getOverview: () => api.get('/admin/intelligence/overview'),
 };
